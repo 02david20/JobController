@@ -1,135 +1,96 @@
-# jobcontroller
-// TODO(user): Add simple overview of use/purpose
+# JobController
 
-## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+A Kubernetes operator built with Kubebuilder to run and manage container workloads using standard Kubernetes `batch/v1.Job` resources.
 
-## Getting Started
+## Key Features
+
+- **Custom Resource definition**: Deploys workloads defined by the `JobRunner` Custom Resource (under the `dtools.dsandbox.io/v1` API group).
+- **Automated Workloads**: Manages the execution lifecycle of Kubernetes batch jobs from custom specifications.
+- **Robust Status Tracking**: Reconciles the execution state (`Pending`, `Running`, `Completed`, `Failed`) and exposes it clearly in the resource's `.status.execute` field.
+- **Decoupled Helm Chart**: Clean distribution via a Helm chart synced from Kustomize templates (`deploy/charts/jobcontroller`).
+- **Dynamic CI/CD Pipeline**: Automates Docker image compilation and Helm chart packaging with synchronized version tagging (`major.minor.RUN_NUMBER`).
+
+---
+
+## Architecture & Resources
+
+When a `JobRunner` custom resource is created, the operator reconciles it by:
+1. Creating a corresponding `batch/v1.Job` matching the specified `image` and `command`.
+2. Setting an OwnerReference on the Job to ensure garbage collection when the `JobRunner` is deleted.
+3. Tracking the status of the underlying Job and updating the `JobRunner` status conditions accordingly.
+
+### Sample Manifest
+
+```yaml
+apiVersion: dtools.dsandbox.io/v1
+kind: JobRunner
+metadata:
+  name: sample-workload
+  namespace: default
+spec:
+  image: busybox:latest
+  command:
+    - sh
+    - -c
+    - "echo 'Running job controller task...' && sleep 5 && echo 'Done!'"
+```
+
+---
+
+## Quick Start & Development
 
 ### Prerequisites
-- go version v1.24.6+
-- docker version 17.03+.
-- kubectl version v1.11.3+.
-- Access to a Kubernetes v1.11.3+ cluster.
 
-### To Deploy on the cluster
-**Build and push your image to the location specified by `IMG`:**
+- **Go**: `v1.25`
+- **Docker**: `v17.03+`
+- **Kubectl**: `v1.24+`
+- **Kubernetes Cluster**: Access to a local (e.g. Kind) or remote cluster
 
-```sh
-make docker-build docker-push IMG=<some-registry>/jobcontroller:tag
+### Local Development
+
+1. **Run Tests**:
+   ```bash
+   make test
+   ```
+2. **Run Operator Locally** (uses current kubeconfig context):
+   ```bash
+   make install
+   make run
+   ```
+
+For detailed setup, debugging, and testing commands, see [docs/development.md](file:///Users/david/Documents/Go/JobController/docs/development.md).
+
+---
+
+## Deployment & Production
+
+### Syncing Kustomize to Helm
+Whenever you make updates to RBAC rules, CRD markers, or controller deployment manifests, synchronize the changes to the Helm chart:
+```bash
+make sync-helm
 ```
 
-**NOTE:** This image ought to be published in the personal registry you specified.
-And it is required to have access to pull the image from the working environment.
-Make sure you have the proper permission to the registry if the above commands don’t work.
-
-**Install the CRDs into the cluster:**
-
-```sh
-make install
+### Install via Helm
+Deploy the operator to your cluster:
+```bash
+helm upgrade --install jobcontroller deploy/charts/jobcontroller \
+  --namespace jobcontroller-system \
+  --create-namespace
 ```
 
-**Deploy the Manager to the cluster with the image specified by `IMG`:**
+For detailed production instructions, Helm parameters, and Argo CD configurations, see [docs/distribution.md](file:///Users/david/Documents/Go/JobController/docs/distribution.md).
 
-```sh
-make deploy IMG=<some-registry>/jobcontroller:tag
-```
+---
 
-> **NOTE**: If you encounter RBAC errors, you may need to grant yourself cluster-admin
-privileges or be logged in as admin.
+## Versioning & Releases
 
-**Create instances of your solution**
-You can apply the samples (examples) from the config/sample:
+This project uses an automated versioning setup integrated with GitHub Actions (`.github/workflows/release.yml`):
+- **Base Version**: Managed in the [VERSION](file:///Users/david/Documents/Go/JobController/VERSION) file (e.g., `0.1.0`).
+- **Dynamic Patch Suffix**: The CI workflow extracts `major.minor` and appends the GitHub Run Number as the patch version (e.g., `0.1.4`).
+- **Releases**: Pushes matching Docker image tags and Helm OCI charts to Docker Hub under the generated version tag.
 
-```sh
-kubectl apply -k config/samples/
-```
-
->**NOTE**: Ensure that the samples has default values to test it out.
-
-### To Uninstall
-**Delete the instances (CRs) from the cluster:**
-
-```sh
-kubectl delete -k config/samples/
-```
-
-**Delete the APIs(CRDs) from the cluster:**
-
-```sh
-make uninstall
-```
-
-**UnDeploy the controller from the cluster:**
-
-```sh
-make undeploy
-```
-
-## Project Distribution
-
-Following the options to release and provide this solution to the users.
-
-### By providing a bundle with all YAML files
-
-1. Build the installer for the image built and published in the registry:
-
-```sh
-make build-installer IMG=<some-registry>/jobcontroller:tag
-```
-
-**NOTE:** The makefile target mentioned above generates an 'install.yaml'
-file in the dist directory. This file contains all the resources built
-with Kustomize, which are necessary to install this project without its
-dependencies.
-
-2. Using the installer
-
-Users can just run 'kubectl apply -f <URL for YAML BUNDLE>' to install
-the project, i.e.:
-
-```sh
-kubectl apply -f https://raw.githubusercontent.com/<org>/jobcontroller/<tag or branch>/dist/install.yaml
-```
-
-### By providing a Helm Chart
-
-1. Build the chart using the optional helm plugin
-
-```sh
-kubebuilder edit --plugins=helm/v2-alpha
-```
-
-2. See that a chart was generated under 'dist/chart', and users
-can obtain this solution from there.
-
-**NOTE:** If you change the project, you need to update the Helm Chart
-using the same command above to sync the latest changes. Furthermore,
-if you create webhooks, you need to use the above command with
-the '--force' flag and manually ensure that any custom configuration
-previously added to 'dist/chart/values.yaml' or 'dist/chart/manager/manager.yaml'
-is manually re-applied afterwards.
-
-## Contributing
-// TODO(user): Add detailed information on how you would like others to contribute to this project
-
-**NOTE:** Run `make help` for more information on all potential `make` targets
-
-More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
+---
 
 ## License
 
-Copyright 2026.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
+Copyright 2026. Licensed under the Apache License, Version 2.0.
