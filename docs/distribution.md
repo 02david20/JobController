@@ -64,6 +64,20 @@ To release and distribute the Helm chart to a production container registry (e.g
    helm push jobcontroller-<version>.tgz oci://your-registry.azurecr.io/helm
    ```
 
+## Automatic Versioning & CI/CD Pipeline
+
+The release pipeline automated via GitHub Actions (`.github/workflows/release.yml`) implements an automated versioning scheme:
+
+1. **VERSION File**: The base version is specified in the [VERSION](file:///Users/david/Documents/Go/JobController/VERSION) file at the root of the repository (e.g., `0.1.0`).
+2. **Dynamic Version Calculation**: 
+   - The CI pipeline parses the `major.minor` components from the `VERSION` file.
+   - It appends the GitHub Actions run number as the patch version.
+   - For example, if the base version in `VERSION` is `0.1.0` and the GitHub Run Number is `4`, the calculated version is `0.1.4`.
+3. **Synchronized Image and Chart Tags**:
+   - The controller manager Docker image is built and pushed using this dynamic version tag (e.g., `0.1.4`), along with `latest` and the commit SHA tag.
+   - The Helm chart is packaged using this exact same dynamic version for both the chart `version` and the `appVersion` (overriding the static version in `Chart.yaml`).
+   - The default image repository in `values.yaml` is dynamically updated in the packaged chart to point to the correct registry destination.
+
 ---
 
 ## Deploying via Argo CD
