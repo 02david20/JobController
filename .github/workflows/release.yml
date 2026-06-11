@@ -86,15 +86,11 @@ jobs:
           make sync-helm
 
       - name: Build and Push Manager Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.DOCKER_IMAGE_PRIMARY }}:latest
-            ${{ env.DOCKER_IMAGE_PRIMARY }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        run: |
+          make docker-build IMG=${{ env.DOCKER_IMAGE_PRIMARY }}:${{ github.sha }}
+          docker tag ${{ env.DOCKER_IMAGE_PRIMARY }}:${{ github.sha }} ${{ env.DOCKER_IMAGE_PRIMARY }}:latest
+          make docker-push IMG=${{ env.DOCKER_IMAGE_PRIMARY }}:${{ github.sha }}
+          make docker-push IMG=${{ env.DOCKER_IMAGE_PRIMARY }}:latest
 
       - name: Package and Push Helm Chart
         run: |
