@@ -277,6 +277,14 @@ sync-helm: manifests kustomize ## Generate Helm chart templates and CRDs using K
 	mkdir -p deploy/charts/jobcontroller/crds
 	$(KUSTOMIZE) build config/default > deploy/charts/jobcontroller/templates/manifests.yaml
 	$(KUSTOMIZE) build config/crd > deploy/charts/jobcontroller/crds/crds.yaml
+	@# Replace the hardcoded manager image with Helm values templating
+	@if [ -f deploy/charts/jobcontroller/templates/manifests.yaml ]; then \
+		if [ "$$(uname)" = "Darwin" ]; then \
+			sed -i '' 's|image: controller:latest|image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag \| default .Chart.AppVersion }}"|g' deploy/charts/jobcontroller/templates/manifests.yaml; \
+		else \
+			sed -i 's|image: controller:latest|image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag \| default .Chart.AppVersion }}"|g' deploy/charts/jobcontroller/templates/manifests.yaml; \
+		fi; \
+	fi
 
 .PHONY: install-helm
 install-helm: ## Install the latest version of Helm.

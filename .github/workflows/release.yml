@@ -66,9 +66,14 @@ jobs:
             fi
           fi
 
+          # Read base version from VERSION file and calculate APP_VERSION
+          BASE_VERSION=$(cat VERSION | tr -d '[:space:]')
+          APP_VERSION="${BASE_VERSION}-${{ github.run_number }}"
+
           echo "REGISTRY_HOST=$REGISTRY_HOST" >> $GITHUB_ENV
           echo "DOCKER_IMAGE_PRIMARY=$DOCKER_IMAGE_PRIMARY" >> $GITHUB_ENV
           echo "HELM_REPO_URL=$HELM_REPO_URL" >> $GITHUB_ENV
+          echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
 
       - name: Log in to Docker Registry
         uses: docker/login-action@v3
@@ -87,18 +92,20 @@ jobs:
 
       - name: Build and Push Manager Image
         run: |
-          make docker-build IMG=${{ env.DOCKER_IMAGE_PRIMARY }}:${{ github.sha }}
-          docker tag ${{ env.DOCKER_IMAGE_PRIMARY }}:${{ github.sha }} ${{ env.DOCKER_IMAGE_PRIMARY }}:latest
-          make docker-push IMG=${{ env.DOCKER_IMAGE_PRIMARY }}:${{ github.sha }}
+          make docker-build IMG=${{ env.DOCKER_IMAGE_PRIMARY }}:${{ env.APP_VERSION }}
+          docker tag ${{ env.DOCKER_IMAGE_PRIMARY }}:${{ env.APP_VERSION }} ${{ env.DOCKER_IMAGE_PRIMARY }}:latest
+          docker tag ${{ env.DOCKER_IMAGE_PRIMARY }}:${{ env.APP_VERSION }} ${{ env.DOCKER_IMAGE_PRIMARY }}:${{ github.sha }}
+          make docker-push IMG=${{ env.DOCKER_IMAGE_PRIMARY }}:${{ env.APP_VERSION }}
           make docker-push IMG=${{ env.DOCKER_IMAGE_PRIMARY }}:latest
+          make docker-push IMG=${{ env.DOCKER_IMAGE_PRIMARY }}:${{ github.sha }}
 
       - name: Package and Push Helm Chart
         run: |
-          # Extract the version from Chart.yaml
-          CHART_VERSION=$(grep '^version:' deploy/charts/jobcontroller/Chart.yaml | awk '{print $2}')
+          # Set the manager image repository in values.yaml dynamically
+          sed -i "s|repository: controller|repository: ${DOCKER_IMAGE_PRIMARY}|g" deploy/charts/jobcontroller/values.yaml
           
-          # Package the chart
-          helm package deploy/charts/jobcontroller --version $CHART_VERSION --app-version latest
+          # Package the chart with the calculated version and app-version
+          helm package deploy/charts/jobcontroller --version ${{ env.APP_VERSION }} --app-version ${{ env.APP_VERSION }}
           
           # Push to OCI registry
-          helm push jobcontroller-$CHART_VERSION.tgz ${{ env.HELM_REPO_URL }}
+          helm push jobcontroller-${{ env.APP_VERSION }}.tgz ${{ env.HELM_REPO_URL }}
