@@ -10,7 +10,7 @@ env:
   REGISTRY: ${{ vars.REGISTRY || 'docker.io' }}
   REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-  IMAGE_NAME: job-controller
+  IMAGE_NAME: jobcontroller
 
 jobs:
   release:
