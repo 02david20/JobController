@@ -4,14 +4,14 @@ on:
   push:
     branches:
       - main
-  pull_request:
-  workflow_dispatch:
+  # pull_request:
+  # workflow_dispatch:
 
 env:
   REGISTRY: ${{ vars.REGISTRY || 'docker.io' }}
   REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-  IMAGE_NAME: jobcontroller
+  IMAGE_NAME: jobcontroller-manager
 
 jobs:
   lint:
@@ -55,7 +55,7 @@ jobs:
     name: Lint & Test Helm Chart
     runs-on: ubuntu-latest
     env:
-      IMG: controller:latest
+      IMG: jobcontroller-manager:latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4

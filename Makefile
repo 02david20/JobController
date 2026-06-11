@@ -1,5 +1,5 @@
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG ?= jobcontroller-manager:latest
 # YEAR defines the year value used for substituting the YEAR placeholder in the boilerplate header.
 YEAR ?= $(shell date +%Y)
 
@@ -147,7 +147,7 @@ docker-buildx: ## Build and push docker image for the manager for cross-platform
 .PHONY: build-installer
 build-installer: manifests generate kustomize ## Generate a consolidated YAML with CRDs and deployment.
 	mkdir -p dist
-	cd config/manager && "$(KUSTOMIZE)" edit set image controller=${IMG}
+	cd config/manager && "$(KUSTOMIZE)" edit set image jobcontroller-manager=${IMG}
 	"$(KUSTOMIZE)" build config/default > dist/install.yaml
 
 ##@ Deployment
@@ -168,7 +168,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 
 .PHONY: deploy
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && "$(KUSTOMIZE)" edit set image controller=${IMG}
+	cd config/manager && "$(KUSTOMIZE)" edit set image jobcontroller-manager=${IMG}
 	"$(KUSTOMIZE)" build config/default | "$(KUBECTL)" apply -f -
 
 .PHONY: undeploy
@@ -280,9 +280,9 @@ sync-helm: manifests kustomize ## Generate Helm chart templates and CRDs using K
 	@# Replace the hardcoded manager image with Helm values templating
 	@if [ -f deploy/charts/jobcontroller/templates/manifests.yaml ]; then \
 		if [ "$$(uname)" = "Darwin" ]; then \
-			sed -i '' 's|image: controller:latest|image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag \| default .Chart.AppVersion }}"|g' deploy/charts/jobcontroller/templates/manifests.yaml; \
+			sed -i '' 's|image: jobcontroller-manager:latest|image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag \| default .Chart.AppVersion }}"|g' deploy/charts/jobcontroller/templates/manifests.yaml; \
 		else \
-			sed -i 's|image: controller:latest|image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag \| default .Chart.AppVersion }}"|g' deploy/charts/jobcontroller/templates/manifests.yaml; \
+			sed -i 's|image: jobcontroller-manager:latest|image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag \| default .Chart.AppVersion }}"|g' deploy/charts/jobcontroller/templates/manifests.yaml; \
 		fi; \
 	fi
 
