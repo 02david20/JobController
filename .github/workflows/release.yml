@@ -66,9 +66,10 @@ jobs:
             fi
           fi
 
-          # Read base version from VERSION file and calculate APP_VERSION
+          # Read base version from VERSION file and calculate APP_VERSION as major.minor.run_number
           BASE_VERSION=$(cat VERSION | tr -d '[:space:]')
-          APP_VERSION="${BASE_VERSION}-${{ github.run_number }}"
+          MAJOR_MINOR=$(echo "$BASE_VERSION" | cut -d'.' -f1,2)
+          APP_VERSION="${MAJOR_MINOR}.${{ github.run_number }}"
 
           echo "REGISTRY_HOST=$REGISTRY_HOST" >> $GITHUB_ENV
           echo "DOCKER_IMAGE_PRIMARY=$DOCKER_IMAGE_PRIMARY" >> $GITHUB_ENV
