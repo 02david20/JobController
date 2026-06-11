@@ -1,0 +1,29 @@
+# This rule is not used by the project jobcontroller itself.
+# It is provided to allow the cluster admin to help manage permissions for users.
+#
+# Grants read-only access to dtools.dsandbox.io resources.
+# This role is intended for users who need visibility into these resources
+# without permissions to modify them. It is ideal for monitoring purposes and limited-access viewing.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: jobcontroller
+    app.kubernetes.io/managed-by: kustomize
+  name: jobrunner-viewer-role
+rules:
+- apiGroups:
+  - dtools.dsandbox.io
+  resources:
+  - jobrunners
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - dtools.dsandbox.io
+  resources:
+  - jobrunners/status
+  verbs:
+  - get

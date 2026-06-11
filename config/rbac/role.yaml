@@ -1,0 +1,50 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs/status
+  verbs:
+  - get
+- apiGroups:
+  - dtools.dsandbox.io
+  resources:
+  - jobrunners
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - dtools.dsandbox.io
+  resources:
+  - jobrunners/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - dtools.dsandbox.io
+  resources:
+  - jobrunners/status
+  verbs:
+  - get
+  - patch
+  - update

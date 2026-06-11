@@ -1,0 +1,10 @@
+apiVersion: dtools.dsandbox.io/v1
+kind: JobRunner
+metadata:
+  labels:
+    app.kubernetes.io/name: jobcontroller
+    app.kubernetes.io/managed-by: kustomize
+  name: jobrunner-sample
+spec:
+  image: "busybox"
+  command: ["sh", "-c", "echo hello"]
