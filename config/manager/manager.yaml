@@ -99,4 +99,6 @@ spec:
         volumeMounts: []
       volumes: []
       serviceAccountName: controller-manager
+      imagePullSecrets:
+        - name: jobcontroller-pull-secret
       terminationGracePeriodSeconds: 10

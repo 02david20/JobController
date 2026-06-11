@@ -80,6 +80,42 @@ The release pipeline automated via GitHub Actions (`.github/workflows/release.ym
 
 ---
 
+## CLI Installation Guide
+
+To deploy the operator from the remote OCI registry to your Kubernetes cluster:
+
+### 1. Create target namespace
+```bash
+kubectl create namespace jobcontroller-system
+```
+
+### 2. Configure Pull Credentials
+Because the controller manager image is hosted on a private repository, you must create a `docker-registry` secret named `jobcontroller-pull-secret` in the namespace where the operator runs:
+```bash
+kubectl create secret docker-registry jobcontroller-pull-secret \
+  --docker-server=https://index.docker.io/v1/ \
+  --docker-username="davidp0c" \
+  --docker-password="YOUR_DOCKER_HUB_ACCESS_TOKEN_OR_PASSWORD" \
+  --docker-email="your-email@example.com" \
+  --namespace jobcontroller-system
+```
+
+### 3. Log in to the Helm OCI Registry
+Authenticate your local Helm client to your Docker Hub registry:
+```bash
+echo "YOUR_DOCKER_HUB_PASSWORD" | helm registry login registry-1.docker.io --username davidp0c --password-stdin
+```
+
+### 4. Install/Upgrade the Operator via Helm
+Deploy the operator using the remote OCI path and your specific release version:
+```bash
+helm upgrade --install jobcontroller oci://registry-1.docker.io/davidp0c/jobcontroller \
+  --version <VERSION> \
+  --namespace jobcontroller-system
+```
+
+---
+
 ## Deploying via Argo CD
 Configure Argo CD to pull and deploy the operator directly.
 
