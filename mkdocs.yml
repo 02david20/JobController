@@ -14,4 +14,5 @@ theme:
 nav:
   - Home: index.md
   - Development Guide: development.md
+  - Project Setup Template: SETUP_TEMPLATE.md
   - Helm Distribution: distribution.md
