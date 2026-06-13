@@ -1,96 +1,119 @@
 # Helm Distribution & Deployment Guide
 
-This guide details how to build, package, and deploy the JobController operator using our decoupled Helm chart pipeline.
-
-## Decoupled Pipeline (cert-manager Pattern)
-Instead of combining Helm's text-templating logic directly with Kustomize (which breaks YAML syntax validators and makes it difficult to maintain), we use a decoupled design:
-1. **Source Code & Manifests**: We maintain raw manifests via Kubebuilder and Kustomize under the `config/` folder.
-2. **Sync Script**: When building releases, we compile Kustomize outputs into single static files inside the Helm chart templates folder. This ensures Kustomize remains the single source of truth.
+This guide details how to build, package, test, and deploy the **JobController** operator using our modern, official Kubebuilder Helm plugin pipeline.
 
 ---
 
-## Syncing Kustomize to Helm
-Whenever you make changes to Go APIs, RBAC tags, or manager deployment configurations, sync the updates directly to your Helm chart using the following Makefile command:
+## 1. Architecture: Kubebuilder Helm Plugin (`helm/v2-alpha`)
 
-```bash
-make sync-helm
-```
+Instead of writing a manual monolithic Helm template or relying on custom python scripts, the project uses the official **Kubebuilder Helm Plugin** (`helm/v2-alpha`). 
 
-### What this does under the hood:
-- Automatically rebuilds the latest Kustomize outputs.
-- Creates/updates `deploy/charts/jobcontroller/templates/manifests.yaml` (which contains deployment, RBAC roles, and service account manifests).
-- Creates/updates `deploy/charts/jobcontroller/crds/crds.yaml` (which contains the raw CRD files).
+This setup allows us to:
+1. Maintain raw Kubernetes manifests under `config/` (CRDs, RBAC roles, manager Deployment) as the single source of truth.
+2. Compile and compile Kustomize resources into **clean, split-template files** within our Helm chart directory (`dist/chart/`).
+3. Leverage automatic Helm schema generation to validate values file changes.
 
----
+### Helm Chart Directory Structure
+The Helm chart source is located under `dist/chart/` and organized as follows:
 
-## Helm Chart Structure
-The packaged Helm chart is located under `deploy/charts/jobcontroller/`:
 ```text
-deploy/charts/jobcontroller/
-├── Chart.yaml              # Chart versioning metadata
-├── values.yaml             # Overridable values (e.g. image repository and tags)
-├── crds/
-│   └── crds.yaml           # Auto-compiled CRD manifests
-└── templates/
-    └── manifests.yaml      # Auto-compiled Deployment/RBAC manifests
-```
-
-### Values Configuration
-Customize your deployment via `deploy/charts/jobcontroller/values.yaml`. 
-For example, override the image settings:
-```yaml
-manager:
-  image:
-    repository: your-registry.azurecr.io/job-controller
-    tag: v1.0.0
+dist/chart/
+├── Chart.yaml                  # Chart versioning and metadata
+├── values.yaml                 # User-overridable configuration variables
+├── values.schema.json          # Automatically generated JSON schema for values.yaml
+├── templates/                  # Split template files compiled from Kustomize
+│   ├── NOTES.txt               # Installation instructions
+│   ├── _helpers.tpl            # Common template helpers and labels
+│   ├── crd/                    # CRDs (e.g. JobRunner CRD)
+│   ├── manager/                # Manager Deployment configuration
+│   ├── metrics/                # Metrics Service configuration
+│   ├── prometheus/             # Prometheus ServiceMonitor configuration
+│   └── rbac/                   # Group-specific and cluster RBAC roles & bindings
+└── tests/                      # Unit/snapshot tests
+    ├── __snapshots__/          # Reference snapshot baselines
+    ├── deployment_snapshot_test.yaml
+    ├── metrics_snapshot_test.yaml
+    └── rbac_snapshot_test.yaml
 ```
 
 ---
 
-## Packaging and Publishing the Chart
-To release and distribute the Helm chart to a production container registry (e.g. Azure Container Registry via OCI):
+## 2. Values.yaml Key Parameters
 
-1. **Package the chart**:
-   ```bash
-   helm package deploy/charts/jobcontroller
-   ```
-   *This creates a tarball named `jobcontroller-<version>.tgz`.*
-2. **Authenticate to your registry**:
-   ```bash
-   az acr login --name your-registry
-   ```
-3. **Push the OCI artifact**:
-   ```bash
-   helm push jobcontroller-<version>.tgz oci://your-registry.azurecr.io/helm
-   ```
+The Helm chart exposes standard parameters in `dist/chart/values.yaml` to customize deployment:
 
-## Automatic Versioning & CI/CD Pipeline
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `controllerManager.manager.image.repository` | string | `controller` | Docker image repository. Replaced dynamically during push. |
+| `controllerManager.manager.image.tag` | string | `latest` | Docker image tag. Replaced dynamically during push. |
+| `metrics.enable` | boolean | `false` | Whether to enable the metrics service port. If `true`, a Metrics Service and ServiceMonitor are generated. |
+| `kubernetesClusterDomain` | string | `cluster.local` | Domain for service discovery resolution. |
 
-The release pipeline automated via GitHub Actions (`.github/workflows/release.yml`) implements an automated versioning scheme:
+---
 
-1. **VERSION File**: The base version is specified in the [VERSION](file:///Users/david/Documents/Go/JobController/VERSION) file at the root of the repository (e.g., `0.1.0`).
+## 3. Development & Management (Makefile Targets)
+
+We provide Makefile targets to handle building, schema updates, local testing, and packaging:
+
+### Syncing Kustomize to Helm
+To compile Kustomize modifications into the split Helm templates, run:
+```bash
+make helm-chart
+```
+*Under the hood, this runs `kubebuilder edit --plugins=helm.kubebuilder.io/v2-alpha` to populate `dist/chart/templates/` and generates the JSON schema.*
+
+### Rebuilding & Linting All Assets
+To build the installer manifest, sync the Helm chart, regenerate the schema, and lint the resulting templates:
+```bash
+make generate-dist
+```
+
+### Running Unit/Snapshot Tests
+Unit tests use the `helm-unittest` plugin to assert template properties and prevent regression against snapshot baselines:
+```bash
+make helm-test
+```
+
+### Updating Test Snapshot Baselines
+If you change Kustomize manifests intentionally and need to update the unit test snapshots to match:
+```bash
+make helm-update-snapshots
+```
+
+### Running Helm E2E Integration Tests
+To spin up an isolated local Kind cluster, deploy the operator via Helm, and run validation specs (asserting the controller manager and metrics service are running):
+```bash
+make test-helm-e2e
+```
+
+---
+
+## 4. Automatic Versioning & CI/CD Pipeline
+
+The GitHub Actions release pipeline ([`.github/workflows/release.yml`](file:///Users/david/Documents/Go/JobController/.github/workflows/release.yml)) automates tagging, building, and publishing:
+
+1. **VERSION File**: The base version is specified in the [VERSION](file:///Users/david/Documents/Go/JobController/VERSION) file (e.g. `0.1.0`).
 2. **Dynamic Version Calculation**: 
-   - The CI pipeline parses the `major.minor` components from the `VERSION` file.
-   - It appends the GitHub Actions run number as the patch version.
-   - For example, if the base version in `VERSION` is `0.1.0` and the GitHub Run Number is `4`, the calculated version is `0.1.4`.
-3. **Synchronized Image and Chart Tags**:
-   - The controller manager Docker image is built and pushed using this dynamic version tag (e.g., `0.1.4`), along with `latest` and the commit SHA tag.
-   - The Helm chart is packaged using this exact same dynamic version for both the chart `version` and the `appVersion` (overriding the static version in `Chart.yaml`).
-   - The default image repository in `values.yaml` is dynamically updated in the packaged chart to point to the correct registry destination.
+   - The CI pipeline parses the `major.minor` components from `VERSION`.
+   - It appends the GitHub Actions run number as the patch version (e.g., `0.1.42` for run 42).
+3. **Tag Syncing**:
+   - The manager Docker image is built and pushed to the registry as `davidp0c/jobcontroller-manager:<version>`.
+   - In the packaged Helm chart, `sed` dynamically replaces the repository and tags in `values.yaml` to target the built image.
+   - The Helm chart is packaged as `jobcontroller-<version>.tgz` and pushed to the Docker Hub OCI registry.
 
 ---
 
-## CLI Installation Guide
+## 5. CLI Installation Guide
 
-To deploy the operator from the remote OCI registry to your Kubernetes cluster:
+To deploy the operator from the remote OCI registry:
 
-### 1. Create target namespace
+### Step 1: Create the Namespace
 ```bash
 kubectl create namespace jobcontroller-system
 ```
 
-### 2. Configure Pull Credentials
-Because the controller manager image is hosted on a private repository, you must create a `docker-registry` secret named `jobcontroller-pull-secret` in the namespace where the operator runs:
+### Step 2: Configure Pull Credentials
+If pulling the controller manager image from a private repository, create the `docker-registry` secret:
 ```bash
 kubectl create secret docker-registry jobcontroller-pull-secret \
   --docker-server=https://index.docker.io/v1/ \
@@ -100,14 +123,13 @@ kubectl create secret docker-registry jobcontroller-pull-secret \
   --namespace jobcontroller-system
 ```
 
-### 3. Log in to the Helm OCI Registry
-Authenticate your local Helm client to your Docker Hub registry:
+### Step 3: Authenticate your Helm Client
+Log in to the Docker Hub registry using your credentials:
 ```bash
 echo "YOUR_DOCKER_HUB_PASSWORD" | helm registry login registry-1.docker.io --username davidp0c --password-stdin
 ```
 
-### 4. Install/Upgrade the Operator via Helm
-Deploy the operator using the remote OCI path and your specific release version:
+### Step 4: Install or Upgrade the Operator
 ```bash
 helm upgrade --install jobcontroller oci://registry-1.docker.io/davidp0c/jobcontroller \
   --version <VERSION> \
@@ -116,8 +138,9 @@ helm upgrade --install jobcontroller oci://registry-1.docker.io/davidp0c/jobcont
 
 ---
 
-## Deploying via Argo CD
-Configure Argo CD to pull and deploy the operator directly.
+## 6. GitOps Deployment via Argo CD
+
+You can deploy the operator through Argo CD using either a Git repository reference or the Helm OCI registry path.
 
 ### Method A: Deploying from the Git Repository (Subdirectory)
 ```yaml
@@ -129,15 +152,15 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://dev.azure.com/dsandbox/Development/_git/KuberJobController'
-    targetRevision: HEAD
-    path: deploy/charts/jobcontroller
+    repoURL: 'https://github.com/02david20/JobController'
+    targetRevision: main
+    path: dist/chart
     helm:
       valueFiles:
         - values.yaml
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: job-controller-system
+    namespace: jobcontroller-system
   syncPolicy:
     automated:
       prune: true
@@ -156,15 +179,15 @@ spec:
   project: default
   source:
     chart: jobcontroller
-    repoURL: 'your-registry.azurecr.io/helm'
-    targetRevision: 0.1.0  # Chart version
+    repoURL: 'registry-1.docker.io/davidp0c'
+    targetRevision: 0.1.42  # Chart version
     helm:
       parameters:
-        - name: manager.image.tag
-          value: v1.0.0    # Controller image tag override
+        - name: metrics.enable
+          value: "true"
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: job-controller-system
+    namespace: jobcontroller-system
   syncPolicy:
     automated:
       prune: true
