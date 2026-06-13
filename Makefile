@@ -57,6 +57,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	"$(CONTROLLER_GEN)" object:headerFile="hack/boilerplate.go.txt",year=$(YEAR) paths="./..."
+	go generate ./...
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
@@ -221,12 +222,11 @@ KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
-HELM_SCHEMA_GEN ?= $(LOCALBIN)/helm-values-schema-json
+HELM_SCHEMA_GEN ?= go run github.com/losisin/helm-values-schema-json/v2
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.8.1
 CONTROLLER_TOOLS_VERSION ?= v0.20.1
-HELM_SCHEMA_GEN_VERSION ?= v2.2.0
 
 #ENVTEST_VERSION is the version of controller-runtime release branch to fetch the envtest setup script (i.e. release-0.20)
 ENVTEST_VERSION ?= $(shell v='$(call gomodver,sigs.k8s.io/controller-runtime)'; \
@@ -272,10 +272,7 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 		mv -f $(LOCALBIN)/golangci-lint-custom $(GOLANGCI_LINT); \
 	} || true
 
-.PHONY: helm-values-schema-json
-helm-values-schema-json: $(HELM_SCHEMA_GEN) ## Download helm-values-schema-json locally if necessary.
-$(HELM_SCHEMA_GEN): $(LOCALBIN)
-	$(call go-install-tool,$(HELM_SCHEMA_GEN),github.com/losisin/helm-values-schema-json/v2,$(HELM_SCHEMA_GEN_VERSION))
+
 
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary
@@ -324,8 +321,8 @@ helm-chart: ## Regenerate the Helm chart in dist/chart/ from current kustomize o
 	$(MAKE) helm-schema
 
 .PHONY: helm-schema
-helm-schema: helm-values-schema-json ## Generate dist/chart/values.schema.json from values.yaml.
-	cd $(HELM_CHART_DIR) && "$(HELM_SCHEMA_GEN)" -f values.yaml -o values.schema.json
+helm-schema: ## Generate dist/chart/values.schema.json from values.yaml.
+	cd $(HELM_CHART_DIR) && $(HELM_SCHEMA_GEN) -f values.yaml -o values.schema.json
 
 .PHONY: helm-package
 helm-package: helm-chart install-helm ## Package the Helm chart as a versioned .tgz in dist/.
