@@ -37,10 +37,10 @@ import (
 const namespace = "jobcontroller-system"
 
 // serviceAccountName created for the project
-const serviceAccountName = "jobcontroller-controller-manager"
+const serviceAccountName = "jobcontroller-job-helm-controller-manager"
 
 // metricsServiceName is the name of the metrics service of the project
-const metricsServiceName = "jobcontroller-controller-manager-metrics-service"
+const metricsServiceName = "jobcontroller-job-helm-controller-manager-metrics-service"
 
 // metricsRoleBindingName is the name of the RBAC that will be created to allow get the metrics data
 const metricsRoleBindingName = "jobcontroller-metrics-binding"
@@ -56,7 +56,7 @@ var _ = Describe("Helm Manager", Ordered, func() {
 	BeforeAll(func() {
 		By("creating a ClusterRoleBinding for the service account to allow access to metrics")
 		cmd := exec.Command("kubectl", "create", "clusterrolebinding", metricsRoleBindingName,
-			"--clusterrole=jobcontroller-metrics-reader",
+			"--clusterrole=jobcontroller-job-helm-metrics-reader",
 			fmt.Sprintf("--serviceaccount=%s:%s", namespace, serviceAccountName),
 		)
 		_, err := utils.Run(cmd)
