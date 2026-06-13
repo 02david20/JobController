@@ -1,6 +1,7 @@
 site_name: JobController Operator
 site_description: Kubernetes operator for managing JobRunner custom resources.
 site_author: DSandBox
+docs_dir: .
 
 theme:
   name: material
@@ -25,6 +26,10 @@ theme:
 
 extra_css:
   - stylesheets/custom.css
+
+plugins:
+  - search
+  - macros
 
 nav:
   - Home: index.md
