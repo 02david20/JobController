@@ -19,7 +19,7 @@ manager:
     repository: controller
     ## Image tag (defaults to Chart.appVersion if not set)
     ##
-    # tag: ""
+    tag: "0.1.0.0"
     pullPolicy: IfNotPresent
 
   ## Arguments
@@ -29,8 +29,8 @@ manager:
 
   ## Image pull secrets
   ##
-  # imagePullSecrets:
-  #   - name: myregistrykey
+  imagePullSecrets:
+    - name: jobcontroller-pull-secret
 
   ## Pod-level security settings
   ##

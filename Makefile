@@ -1,5 +1,12 @@
+# Versioning: VERSION_BASE from VERSION file; PATCH = count of git tags for that base.
+# Bump PATCH by running `make release-tag`. Bump base by editing VERSION file.
+VERSION_BASE := $(shell cat VERSION 2>/dev/null || echo "0.1")
+PATCH        := $(shell git tag -l "$(VERSION_BASE).*" 2>/dev/null | wc -l | tr -d ' ')
+VERSION      := $(VERSION_BASE).$(PATCH)
+CHART_VERSION ?= $(VERSION)
+
 # Image URL to use all building/pushing image targets
-IMG ?= jobcontroller-manager:latest
+IMG ?= controller:$(VERSION)
 # YEAR defines the year value used for substituting the YEAR placeholder in the boilerplate header.
 YEAR ?= $(shell date +%Y)
 
@@ -94,6 +101,31 @@ test-e2e: setup-test-e2e manifests generate fmt vet ## Run the e2e tests. Expect
 cleanup-test-e2e: ## Tear down the Kind cluster used for e2e tests
 	@$(KIND) delete cluster --name $(KIND_CLUSTER)
 
+KIND_HELM_CLUSTER ?= jobcontroller-test-helm-e2e
+
+.PHONY: setup-test-helm-e2e
+setup-test-helm-e2e: ## Set up a Kind cluster for Helm e2e tests if it does not exist
+	@command -v $(KIND) >/dev/null 2>&1 || { \
+		echo "Kind is not installed. Please install Kind manually."; \
+		exit 1; \
+	}
+	@case "$$($(KIND) get clusters)" in \
+		*"$(KIND_HELM_CLUSTER)"*) \
+			echo "Kind cluster '$(KIND_HELM_CLUSTER)' already exists. Skipping creation." ;; \
+		*) \
+			echo "Creating Kind cluster '$(KIND_HELM_CLUSTER)'..."; \
+			$(KIND) create cluster --name $(KIND_HELM_CLUSTER) ;; \
+	esac
+
+.PHONY: test-helm-e2e
+test-helm-e2e: setup-test-helm-e2e ## Run the Helm e2e tests. Expected an isolated environment using Kind.
+	KIND=$(KIND) KIND_CLUSTER=$(KIND_HELM_CLUSTER) go test -tags=helm_e2e ./test/helm_e2e/ -v -ginkgo.v
+	$(MAKE) cleanup-test-helm-e2e
+
+.PHONY: cleanup-test-helm-e2e
+cleanup-test-helm-e2e: ## Tear down the Kind cluster used for Helm e2e tests
+	@$(KIND) delete cluster --name $(KIND_HELM_CLUSTER)
+
 .PHONY: lint
 lint: golangci-lint ## Run golangci-lint linter
 	"$(GOLANGCI_LINT)" run
@@ -147,7 +179,7 @@ docker-buildx: ## Build and push docker image for the manager for cross-platform
 .PHONY: build-installer
 build-installer: manifests generate kustomize ## Generate a consolidated YAML with CRDs and deployment.
 	mkdir -p dist
-	cd config/manager && "$(KUSTOMIZE)" edit set image jobcontroller-manager=${IMG}
+	cd config/manager && "$(KUSTOMIZE)" edit set image controller=${IMG}
 	"$(KUSTOMIZE)" build config/default > dist/install.yaml
 
 ##@ Deployment
@@ -168,7 +200,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 
 .PHONY: deploy
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && "$(KUSTOMIZE)" edit set image jobcontroller-manager=${IMG}
+	cd config/manager && "$(KUSTOMIZE)" edit set image controller=${IMG}
 	"$(KUSTOMIZE)" build config/default | "$(KUBECTL)" apply -f -
 
 .PHONY: undeploy
@@ -184,15 +216,17 @@ $(LOCALBIN):
 
 ## Tool Binaries
 KUBECTL ?= kubectl
-KIND ?= kind
+KIND ?= $(shell command -v kind 2>/dev/null || echo "$$HOME/go/bin/kind")
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
+HELM_SCHEMA_GEN ?= $(LOCALBIN)/helm-values-schema-json
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.8.1
 CONTROLLER_TOOLS_VERSION ?= v0.20.1
+HELM_SCHEMA_GEN_VERSION ?= v2.2.0
 
 #ENVTEST_VERSION is the version of controller-runtime release branch to fetch the envtest setup script (i.e. release-0.20)
 ENVTEST_VERSION ?= $(shell v='$(call gomodver,sigs.k8s.io/controller-runtime)'; \
@@ -238,6 +272,11 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 		mv -f $(LOCALBIN)/golangci-lint-custom $(GOLANGCI_LINT); \
 	} || true
 
+.PHONY: helm-values-schema-json
+helm-values-schema-json: $(HELM_SCHEMA_GEN) ## Download helm-values-schema-json locally if necessary.
+$(HELM_SCHEMA_GEN): $(LOCALBIN)
+	$(call go-install-tool,$(HELM_SCHEMA_GEN),github.com/losisin/helm-values-schema-json/v2,$(HELM_SCHEMA_GEN_VERSION))
+
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary
 # $2 - package url which can be installed
@@ -267,24 +306,46 @@ HELM_NAMESPACE ?= jobcontroller-system
 ## Name of the Helm release
 HELM_RELEASE ?= jobcontroller
 ## Path to the Helm chart directory
-HELM_CHART_DIR ?= deploy/charts/jobcontroller
+HELM_CHART_DIR ?= dist/chart
 ## Additional arguments to pass to helm commands
 HELM_EXTRA_ARGS ?=
 
-.PHONY: sync-helm
-sync-helm: manifests kustomize ## Generate Helm chart templates and CRDs using Kustomize.
-	mkdir -p deploy/charts/jobcontroller/templates
-	mkdir -p deploy/charts/jobcontroller/crds
-	$(KUSTOMIZE) build config/default > deploy/charts/jobcontroller/templates/manifests.yaml
-	$(KUSTOMIZE) build config/crd > deploy/charts/jobcontroller/crds/crds.yaml
-	@# Replace the hardcoded manager image with Helm values templating
-	@if [ -f deploy/charts/jobcontroller/templates/manifests.yaml ]; then \
-		if [ "$$(uname)" = "Darwin" ]; then \
-			sed -i '' 's|image: jobcontroller-manager:latest|image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag \| default .Chart.AppVersion }}"|g' deploy/charts/jobcontroller/templates/manifests.yaml; \
-		else \
-			sed -i 's|image: jobcontroller-manager:latest|image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag \| default .Chart.AppVersion }}"|g' deploy/charts/jobcontroller/templates/manifests.yaml; \
-		fi; \
-	fi
+.PHONY: generate-dist
+generate-dist: build-installer ## Generate dist/install.yaml, update Helm chart, schema, and lint.
+	kubebuilder edit --plugins=helm.kubebuilder.io/v2-alpha
+	rm -f .github/workflows/test-chart.yml
+	$(MAKE) helm-schema
+	helm lint $(HELM_CHART_DIR)
+
+.PHONY: helm-chart
+helm-chart: ## Regenerate the Helm chart in dist/chart/ from current kustomize output.
+	kubebuilder edit --plugins=helm.kubebuilder.io/v2-alpha
+	rm -f .github/workflows/test-chart.yml
+	$(MAKE) helm-schema
+
+.PHONY: helm-schema
+helm-schema: helm-values-schema-json ## Generate dist/chart/values.schema.json from values.yaml.
+	cd $(HELM_CHART_DIR) && "$(HELM_SCHEMA_GEN)" -f values.yaml -o values.schema.json
+
+.PHONY: helm-package
+helm-package: helm-chart install-helm ## Package the Helm chart as a versioned .tgz in dist/.
+	$(HELM) package $(HELM_CHART_DIR) \
+	  --destination dist/ \
+	  --version $(CHART_VERSION) \
+	  --app-version $(VERSION)
+
+.PHONY: helm-test
+helm-test: install-helm ## Run Helm snapshot/unit tests against dist/chart/.
+	$(HELM) unittest $(HELM_CHART_DIR)
+
+.PHONY: helm-update-snapshots
+helm-update-snapshots: install-helm ## Regenerate Helm snapshot baselines in dist/chart/tests/__snapshots__/.
+	$(HELM) unittest -u $(HELM_CHART_DIR)
+
+.PHONY: release-tag
+release-tag: ## Tag current commit as release $(VERSION). Push manually afterwards.
+	git tag -a $(VERSION) -m "Release $(VERSION)"
+	@echo "Tagged $(VERSION) — push with: git push origin $(VERSION)"
 
 .PHONY: install-helm
 install-helm: ## Install the latest version of Helm.

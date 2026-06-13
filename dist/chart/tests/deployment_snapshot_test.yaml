@@ -1,0 +1,21 @@
+suite: manager deployment snapshot
+templates:
+  - templates/manager/manager.yaml
+tests:
+  - it: should match snapshot with default values
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should render image with custom repository and tag
+    set:
+      manager.image.repository: myregistry.azurecr.io/jobcontroller
+      manager.image.tag: "1.2.3"
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should skip deployment when disabled
+    set:
+      manager.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0

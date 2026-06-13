@@ -1,0 +1,17 @@
+suite: rbac snapshot
+templates:
+  - templates/rbac/controller-manager.yaml
+  - templates/rbac/jobrunner-admin-role.yaml
+  - templates/rbac/jobrunner-editor-role.yaml
+  - templates/rbac/jobrunner-viewer-role.yaml
+  - templates/rbac/leader-election-role.yaml
+  - templates/rbac/leader-election-rolebinding.yaml
+  - templates/rbac/manager-role.yaml
+  - templates/rbac/manager-rolebinding.yaml
+  - templates/rbac/metrics-auth-role.yaml
+  - templates/rbac/metrics-auth-rolebinding.yaml
+  - templates/rbac/metrics-reader.yaml
+tests:
+  - it: should match snapshot with default values
+    asserts:
+      - matchSnapshot: {}

@@ -3,6 +3,6 @@ resources:
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
-- name: jobcontroller-manager
-  newName: jobcontroller-manager
-  newTag: latest
+- name: controller
+  newName: controller
+  newTag: 0.1.0.0

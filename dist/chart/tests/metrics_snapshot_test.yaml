@@ -1,0 +1,7 @@
+suite: metrics service snapshot
+templates:
+  - templates/metrics/controller-manager-metrics-service.yaml
+tests:
+  - it: should match snapshot with default values
+    asserts:
+      - matchSnapshot: {}

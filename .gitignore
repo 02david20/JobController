@@ -28,3 +28,10 @@ go.work
 
 # Kubeconfig might contain secrets
 *.kubeconfig
+
+# Helm package output
+*.tgz
+
+# MkDocs build output
+site/
+

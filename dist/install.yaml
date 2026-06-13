@@ -314,6 +314,34 @@ rules:
   - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: jobcontroller-metrics-auth-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: jobcontroller-metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   labels:
@@ -346,6 +374,38 @@ subjects:
   name: jobcontroller-controller-manager
   namespace: jobcontroller-system
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: jobcontroller-metrics-auth-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jobcontroller-metrics-auth-role
+subjects:
+- kind: ServiceAccount
+  name: jobcontroller-controller-manager
+  namespace: jobcontroller-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: jobcontroller
+    control-plane: controller-manager
+  name: jobcontroller-controller-manager-metrics-service
+  namespace: jobcontroller-system
+spec:
+  ports:
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app.kubernetes.io/name: jobcontroller
+    control-plane: controller-manager
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -371,11 +431,12 @@ spec:
     spec:
       containers:
       - args:
+        - --metrics-bind-address=:8443
         - --leader-elect
         - --health-probe-bind-address=:8081
         command:
         - /manager
-        image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag | default .Chart.AppVersion }}"
+        image: controller:0.1.0.0
         livenessProbe:
           httpGet:
             path: /healthz
@@ -407,6 +468,8 @@ spec:
             - ALL
           readOnlyRootFilesystem: true
         volumeMounts: []
+      imagePullSecrets:
+      - name: jobcontroller-pull-secret
       securityContext:
         runAsNonRoot: true
         seccompProfile:

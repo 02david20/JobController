@@ -1,0 +1,142 @@
+should match snapshot with default values:
+  1: |
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: jobcontroller
+        helm.sh/chart: jobcontroller-0.1.0
+      name: RELEASE-NAME-jobcontroller-controller-manager
+      namespace: NAMESPACE
+  2: |
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: jobcontroller
+        helm.sh/chart: jobcontroller-0.1.0
+      name: RELEASE-NAME-jobcontroller-leader-election-role
+      namespace: NAMESPACE
+    rules:
+      - apiGroups:
+          - ""
+        resources:
+          - configmaps
+        verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+      - apiGroups:
+          - coordination.k8s.io
+        resources:
+          - leases
+        verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+      - apiGroups:
+          - ""
+        resources:
+          - events
+        verbs:
+          - create
+          - patch
+  3: |
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: jobcontroller
+        helm.sh/chart: jobcontroller-0.1.0
+      name: RELEASE-NAME-jobcontroller-leader-election-rolebinding
+      namespace: NAMESPACE
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: Role
+      name: RELEASE-NAME-jobcontroller-leader-election-role
+    subjects:
+      - kind: ServiceAccount
+        name: RELEASE-NAME-jobcontroller-controller-manager
+        namespace: NAMESPACE
+  4: |
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: RELEASE-NAME-jobcontroller-manager-role
+    rules:
+      - apiGroups:
+          - batch
+        resources:
+          - jobs
+        verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+      - apiGroups:
+          - batch
+        resources:
+          - jobs/status
+        verbs:
+          - get
+      - apiGroups:
+          - dtools.dsandbox.io
+        resources:
+          - jobrunners
+        verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+      - apiGroups:
+          - dtools.dsandbox.io
+        resources:
+          - jobrunners/finalizers
+        verbs:
+          - update
+      - apiGroups:
+          - dtools.dsandbox.io
+        resources:
+          - jobrunners/status
+        verbs:
+          - get
+          - patch
+          - update
+  5: |
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: jobcontroller
+        helm.sh/chart: jobcontroller-0.1.0
+      name: RELEASE-NAME-jobcontroller-manager-rolebinding
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: RELEASE-NAME-jobcontroller-manager-role
+    subjects:
+      - kind: ServiceAccount
+        name: RELEASE-NAME-jobcontroller-controller-manager
+        namespace: NAMESPACE

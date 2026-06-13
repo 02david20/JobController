@@ -1,0 +1,158 @@
+should match snapshot with default values:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: jobcontroller
+        control-plane: controller-manager
+        helm.sh/chart: jobcontroller-0.1.0
+      name: RELEASE-NAME-jobcontroller-controller-manager
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: jobcontroller
+          control-plane: controller-manager
+      template:
+        metadata:
+          annotations:
+            kubectl.kubernetes.io/default-container: manager
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: jobcontroller
+            control-plane: controller-manager
+            helm.sh/chart: jobcontroller-0.1.0
+        spec:
+          containers:
+            - args:
+                - --metrics-bind-address=0
+                - --health-probe-bind-address=:8081
+                - --leader-elect
+              command:
+                - /manager
+              image: controller:0.1.0.0
+              imagePullPolicy: IfNotPresent
+              livenessProbe:
+                httpGet:
+                  path: /healthz
+                  port: 8081
+                initialDelaySeconds: 15
+                periodSeconds: 20
+              name: manager
+              ports:
+                - containerPort: 8081
+                  name: health
+                  protocol: TCP
+              readinessProbe:
+                httpGet:
+                  path: /readyz
+                  port: 8081
+                initialDelaySeconds: 5
+                periodSeconds: 10
+              resources:
+                limits:
+                  cpu: 500m
+                  memory: 128Mi
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                readOnlyRootFilesystem: true
+              volumeMounts: []
+          imagePullSecrets:
+            - name: jobcontroller-pull-secret
+          securityContext:
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          serviceAccountName: RELEASE-NAME-jobcontroller-controller-manager
+          terminationGracePeriodSeconds: 10
+          volumes: []
+should render image with custom repository and tag:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: jobcontroller
+        control-plane: controller-manager
+        helm.sh/chart: jobcontroller-0.1.0
+      name: RELEASE-NAME-jobcontroller-controller-manager
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: jobcontroller
+          control-plane: controller-manager
+      template:
+        metadata:
+          annotations:
+            kubectl.kubernetes.io/default-container: manager
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: jobcontroller
+            control-plane: controller-manager
+            helm.sh/chart: jobcontroller-0.1.0
+        spec:
+          containers:
+            - args:
+                - --metrics-bind-address=0
+                - --health-probe-bind-address=:8081
+                - --leader-elect
+              command:
+                - /manager
+              image: myregistry.azurecr.io/jobcontroller:1.2.3
+              imagePullPolicy: IfNotPresent
+              livenessProbe:
+                httpGet:
+                  path: /healthz
+                  port: 8081
+                initialDelaySeconds: 15
+                periodSeconds: 20
+              name: manager
+              ports:
+                - containerPort: 8081
+                  name: health
+                  protocol: TCP
+              readinessProbe:
+                httpGet:
+                  path: /readyz
+                  port: 8081
+                initialDelaySeconds: 5
+                periodSeconds: 10
+              resources:
+                limits:
+                  cpu: 500m
+                  memory: 128Mi
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                readOnlyRootFilesystem: true
+              volumeMounts: []
+          imagePullSecrets:
+            - name: jobcontroller-pull-secret
+          securityContext:
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          serviceAccountName: RELEASE-NAME-jobcontroller-controller-manager
+          terminationGracePeriodSeconds: 10
+          volumes: []
