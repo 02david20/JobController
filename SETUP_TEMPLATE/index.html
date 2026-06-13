@@ -1,0 +1,1656 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Kubernetes operator for managing JobRunner custom resources.">
+      
+      
+        <meta name="author" content="DSandBox">
+      
+      
+      
+        <link rel="prev" href="../development/">
+      
+      
+        <link rel="next" href="../distribution/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Project Setup Template - JobController Operator</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/custom.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#go-operator-helm-distribution-setup-template" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="JobController Operator" class="md-header__button md-logo" aria-label="JobController Operator" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            JobController Operator
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Project Setup Template
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../available_content/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Available Content
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../development/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Development Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project Setup Template
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../distribution/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Helm Distribution
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="JobController Operator" class="md-nav__button md-logo" aria-label="JobController Operator" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    JobController Operator
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../available_content/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Available Content
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Setup Template
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Setup Template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0-quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Quick Start
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../distribution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0-quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Quick Start
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="go-operator-helm-distribution-setup-template">Go Operator + Helm Distribution — Setup Template</h1>
+<blockquote>
+<p><strong>Purpose</strong>: A step-by-step reference for bootstrapping a Kubernetes operator with
+<strong>Kubebuilder (Go)</strong> and packaging it for <strong>Helm</strong> distribution.
+Derived from the <code>JobController</code> project structure.</p>
+</blockquote>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#0-quick-start">Quick Start</a></li>
+<li><a href="#1-prerequisites">Prerequisites</a></li>
+<li><a href="#2-initialise-the-project">Initialise the Project</a></li>
+<li><a href="#3-create-api--controller">Create API &amp; Controller</a></li>
+<li><a href="#4-versioning-strategy">Versioning Strategy</a></li>
+<li><a href="#5-add-helm-chart">Add Helm Chart</a></li>
+<li><a href="#6-makefile-targets-reference">Makefile Targets Reference</a></li>
+<li><a href="#7-local-testing-with-kind">Local Testing with Kind</a></li>
+<li><a href="#8-cicd--github-actions-pipeline">CI/CD — GitHub Actions Pipeline</a></li>
+<li><a href="#9-distribution-via-oci-registry">Distribution via OCI Registry</a></li>
+<li><a href="#10-project-structure-reference">Project Structure Reference</a></li>
+<li><a href="#11-quick-reference-cheat-sheet">Quick-Reference Cheat Sheet</a></li>
+</ol>
+<hr />
+<h2 id="0-quick-start">0. Quick Start</h2>
+<blockquote>
+<p>Get from zero to a running operator with Helm in under 10 minutes.
+Replace all <code>&lt;placeholder&gt;</code> values with your own before running.</p>
+</blockquote>
+<pre><code class="language-bash"># ── Step 1: Bootstrap the project ────────────────────────────────────────────
+mkdir my-operator &amp;&amp; cd my-operator
+go mod init github.com/&lt;your-org&gt;/my-operator
+
+kubebuilder init \
+  --domain &lt;your-domain.io&gt; \
+  --repo github.com/&lt;your-org&gt;/my-operator
+
+# ── Step 2: Scaffold API + controller ────────────────────────────────────────
+kubebuilder create api \
+  --group &lt;group&gt; \
+  --version v1alpha1 \
+  --kind &lt;Kind&gt; \
+  --resource true \
+  --controller true
+
+# Regenerate CRDs &amp; DeepCopy after editing *_types.go
+make manifests generate
+
+# ── Step 3: Add Helm chart ───────────────────────────────────────────────────
+kubebuilder edit --plugins=helm.kubebuilder.io/v2-alpha
+# Chart is now at dist/chart/
+
+# ── Step 4: Run tests ────────────────────────────────────────────────────────
+make test                 # Unit tests (no cluster needed)
+make helm-chart           # Sync chart from Kustomize
+make helm-test            # Helm unit tests
+
+# ── Step 5: Build &amp; load image into a local Kind cluster ─────────────────────
+kind create cluster --name my-operator-dev
+export IMG=my-operator:dev
+make docker-build IMG=$IMG
+kind load docker-image $IMG --name my-operator-dev
+
+# ── Step 6: Deploy via Helm ───────────────────────────────────────────────────
+make helm-deploy IMG=$IMG
+kubectl get all -n my-operator-system
+
+# ── Step 7: Verify controller logs ───────────────────────────────────────────
+kubectl logs -n my-operator-system \
+  deployment/my-operator-controller-manager -c manager -f
+</code></pre>
+<blockquote>
+<p>See the sections below for detailed explanations of each step.</p>
+</blockquote>
+<hr />
+<h2 id="1-prerequisites">1. Prerequisites</h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Minimum Version</th>
+<th>Install (macOS)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Go</td>
+<td>1.22+</td>
+<td><code>brew install go</code></td>
+</tr>
+<tr>
+<td>Docker</td>
+<td>latest</td>
+<td><code>brew install --cask docker</code></td>
+</tr>
+<tr>
+<td>Kubebuilder CLI</td>
+<td>v4.x</td>
+<td><code>brew install kubebuilder</code></td>
+</tr>
+<tr>
+<td>Helm</td>
+<td>v3</td>
+<td><code>brew install helm</code></td>
+</tr>
+<tr>
+<td>Kind</td>
+<td>latest</td>
+<td><code>brew install kind</code></td>
+</tr>
+<tr>
+<td>kubectl</td>
+<td>v1.28+</td>
+<td><code>brew install kubectl</code></td>
+</tr>
+<tr>
+<td>Container Registry</td>
+<td>—</td>
+<td>Docker Hub / GHCR / Azure CR / etc.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip</strong>: Verify Kubebuilder is on your <code>$PATH</code>:
+```bash
+kubebuilder version</p>
+<h1 id="should-print-version-v4xx">Should print: Version: v4.x.x ...</h1>
+<p>```</p>
+</blockquote>
+<hr />
+<h2 id="2-initialise-the-project">2. Initialise the Project</h2>
+<pre><code class="language-bash"># 1. Create the project directory
+mkdir my-operator &amp;&amp; cd my-operator
+
+# 2. Initialise the Go module (replace with your actual repo URL)
+go mod init github.com/&lt;your-org&gt;/my-operator
+
+# 3. Scaffold the Kubebuilder project
+kubebuilder init \
+  --domain &lt;your-domain.io&gt; \
+  --repo github.com/&lt;your-org&gt;/my-operator
+</code></pre>
+<p>This scaffolds the standard single-group layout:</p>
+<pre><code>cmd/main.go                 # Manager entry point
+api/                        # CRD type definitions (empty at this stage)
+internal/controller/        # Controller logic (empty at this stage)
+config/                     # Kustomize manifests (CRDs, RBAC, manager)
+Makefile                    # Build, test, deploy commands
+Dockerfile                  # Multi-stage build for the manager image
+go.mod / go.sum             # Go module files
+PROJECT                     # Kubebuilder metadata (DO NOT EDIT)
+</code></pre>
+<h3 id="optional-multi-group-layout">Optional: Multi-Group Layout</h3>
+<p>If you need multiple API groups (e.g., <code>batch</code>, <code>apps</code>), convert before scaffolding any APIs:</p>
+<pre><code class="language-bash">kubebuilder edit --multigroup=true
+</code></pre>
+<p>Then APIs live at <code>api/&lt;group&gt;/&lt;version&gt;/</code>, controllers at <code>internal/controller/&lt;group&gt;/</code>.</p>
+<hr />
+<h2 id="3-create-api-controller">3. Create API &amp; Controller</h2>
+<pre><code class="language-bash">kubebuilder create api \
+  --group &lt;group&gt; \
+  --version v1alpha1 \
+  --kind &lt;Kind&gt; \
+  --resource true \
+  --controller true
+</code></pre>
+<p>After editing <code>api/v1alpha1/&lt;kind&gt;_types.go</code>, always regenerate:</p>
+<pre><code class="language-bash">make manifests   # Regenerate CRDs &amp; RBAC from +kubebuilder markers
+make generate    # Regenerate DeepCopy methods
+</code></pre>
+<h3 id="key-markers-for-_typesgo">Key Markers for <code>*_types.go</code></h3>
+<pre><code class="language-go">// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Namespaced
+// +kubebuilder:printcolumn:name=&quot;Status&quot;,type=string,JSONPath=&quot;.status.conditions[?(@.type=='Ready')].status&quot;
+
+// Field-level markers:
+// +kubebuilder:validation:Required
+// +kubebuilder:validation:Minimum=1
+// +kubebuilder:default=&quot;value&quot;
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Never delete <code>// +kubebuilder:scaffold:*</code> comments</strong> — the CLI injects code at these markers.</p>
+</blockquote>
+<h3 id="after-editing-controller-logic">After Editing Controller Logic</h3>
+<pre><code class="language-bash">make lint-fix    # Auto-fix code style
+make test        # Run unit tests (uses envtest)
+</code></pre>
+<hr />
+<h2 id="4-versioning-strategy">4. Versioning Strategy</h2>
+<p>This project uses a <strong><code>VERSION</code> file + git tag counter</strong> approach.</p>
+<p><strong><code>VERSION</code> file</strong> contains the <code>major.minor</code> base (e.g., <code>0.1</code>).</p>
+<p>In <code>Makefile</code>, the full version is computed automatically:</p>
+<pre><code class="language-makefile">VERSION_BASE := $(shell cat VERSION 2&gt;/dev/null || echo &quot;0.1&quot;)
+PATCH        := $(shell git tag -l &quot;$(VERSION_BASE).*&quot; 2&gt;/dev/null | wc -l | tr -d ' ')
+VERSION      := $(VERSION_BASE).$(PATCH)
+</code></pre>
+<p>The resulting version is <code>&lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;</code> where <code>PATCH</code> auto-increments with each tag.</p>
+<p><strong>To bump the patch version:</strong></p>
+<pre><code class="language-bash">make release-tag       # Tags the current commit as $(VERSION)
+git push origin &lt;TAG&gt;  # Push the tag to trigger CI
+</code></pre>
+<p><strong>To bump major/minor:</strong> Edit the <code>VERSION</code> file manually (e.g., <code>0.1</code> → <code>0.2</code>).</p>
+<p><strong>In CI</strong>, the version is derived from the <code>VERSION</code> file and <code>github.run_number</code>:</p>
+<pre><code class="language-bash">BASE_VERSION=$(cat VERSION | tr -d '[:space:]')
+MAJOR_MINOR=$(echo &quot;$BASE_VERSION&quot; | cut -d'.' -f1,2)
+APP_VERSION=&quot;${MAJOR_MINOR}.${GITHUB_RUN_NUMBER}&quot;
+</code></pre>
+<hr />
+<h2 id="5-helm-distribution">5. Helm Distribution</h2>
+<p>Helm is the <strong>primary distribution mechanism</strong> for this project. The Kubebuilder Helm plugin
+keeps your <code>dist/chart/</code> automatically in sync with your Kustomize config — you never have to
+hand-edit templates.</p>
+<h3 id="51-first-time-setup">5.1 First-Time Setup</h3>
+<pre><code class="language-bash"># Register the Helm plugin and generate dist/chart/ for the first time
+kubebuilder edit --plugins=helm.kubebuilder.io/v2-alpha
+</code></pre>
+<p>This registers <code>helm.kubebuilder.io/v2-alpha</code> in the <code>PROJECT</code> file and writes the initial
+chart. After this, use <code>make helm-chart</code> (or <code>make generate-dist</code>) for all future syncs.</p>
+<p>The generated chart lives at <code>dist/chart/</code>:</p>
+<pre><code>dist/chart/
+├── Chart.yaml              # Chart name, version, appVersion, description
+├── values.yaml             # User-configurable values
+├── values.schema.json      # JSON Schema for values (generated — never edit manually)
+├── .helmignore             # Files to exclude from helm package
+├── templates/              # Kubernetes manifests (generated from config/)
+└── tests/                  # Helm unit tests (helm-unittest)
+    ├── deployment_snapshot_test.yaml
+    ├── metrics_snapshot_test.yaml
+    ├── rbac_snapshot_test.yaml
+    └── __snapshot__/       # Snapshot baselines (commit to git)
+</code></pre>
+<hr />
+<h3 id="52-make-generate-dist-full-distribution-refresh">5.2 <code>make generate-dist</code> — Full Distribution Refresh</h3>
+<p><code>generate-dist</code> is the <strong>all-in-one command</strong> for keeping the distribution artifacts in sync.
+Run it whenever you:
+- Add or change a CRD field / RBAC rule
+- Modify the manager Deployment config
+- Want to cut a new release</p>
+<pre><code class="language-bash">make generate-dist
+</code></pre>
+<p><strong>What it does, in order:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Command</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>make build-installer</code></td>
+<td>Generates <code>dist/install.yaml</code> from Kustomize</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>kubebuilder edit --plugins=helm.kubebuilder.io/v2-alpha</code></td>
+<td>Syncs <code>dist/chart/templates/</code> from <code>dist/install.yaml</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>make helm-schema</code></td>
+<td>Regenerates <code>dist/chart/values.schema.json</code> from <code>values.yaml</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>helm lint dist/chart</code></td>
+<td>Validates the chart before committing</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>make helm-update-snapshots</code></td>
+<td>Refreshes snapshot baselines for unit tests</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Rule of thumb</strong>: run <code>make generate-dist</code> before every commit that touches
+<code>api/</code>, <code>config/</code>, or <code>internal/controller/</code>.</p>
+</blockquote>
+<hr />
+<h3 id="53-make-helm-chart-lightweight-chart-sync">5.3 <code>make helm-chart</code> — Lightweight Chart Sync</h3>
+<p>Use this for a faster sync that skips the snapshot update step:</p>
+<pre><code class="language-bash">make helm-chart
+</code></pre>
+<p><strong>What it does:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Command</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>kubebuilder edit --plugins=helm.kubebuilder.io/v2-alpha</code></td>
+<td>Syncs <code>dist/chart/templates/</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>make helm-schema</code></td>
+<td>Regenerates <code>values.schema.json</code></td>
+</tr>
+</tbody>
+</table>
+<p>Typical use: after changing controller RBAC or config — quick sync before running <code>make helm-test</code>.</p>
+<hr />
+<h3 id="54-valuesyaml-customisation">5.4 <code>values.yaml</code> Customisation</h3>
+<p>After the first <code>generate-dist</code>, customise <code>dist/chart/values.yaml</code> to expose operator-specific
+knobs to end users:</p>
+<pre><code class="language-yaml"># dist/chart/values.yaml (example)
+manager:
+  image:
+    repository: your-registry/my-operator   # set by CI during release
+    tag: &quot;0.1.0&quot;
+  replicas: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+</code></pre>
+<p>After editing <code>values.yaml</code>, regenerate the schema:</p>
+<pre><code class="language-bash">make helm-schema   # Writes dist/chart/values.schema.json
+</code></pre>
+<hr />
+<h3 id="55-helm-unit-tests">5.5 Helm Unit Tests</h3>
+<p>The chart ships with snapshot tests (via <a href="https://github.com/helm-unittest/helm-unittest">helm-unittest</a>).
+These catch accidental changes to generated manifests.</p>
+<pre><code class="language-bash">make helm-test              # Run snapshot tests
+make helm-update-snapshots  # Regenerate baselines after intentional changes
+</code></pre>
+<p>Snapshot files live in <code>dist/chart/tests/__snapshot__/</code> — <strong>commit them to git</strong>.</p>
+<hr />
+<h3 id="56-package-the-chart">5.6 Package the Chart</h3>
+<p>To produce a distributable <code>.tgz</code>:</p>
+<pre><code class="language-bash">make helm-package
+# Outputs: dist/my-operator-&lt;version&gt;.tgz
+</code></pre>
+<p>This uses the auto-computed <code>$(VERSION)</code> and <code>$(CHART_VERSION)</code> from the <code>Makefile</code>.
+To override:</p>
+<pre><code class="language-bash">CHART_VERSION=1.2.3 make helm-package
+</code></pre>
+<blockquote>
+<p>Commit the <code>__snapshot__/</code> directory — CI uses it to detect regressions.</p>
+</blockquote>
+<hr />
+<h2 id="6-makefile-targets-reference">6. Makefile Targets Reference</h2>
+<h3 id="development">Development</h3>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make manifests</code></td>
+<td>Regenerate CRDs &amp; RBAC from <code>+kubebuilder</code> markers</td>
+</tr>
+<tr>
+<td><code>make generate</code></td>
+<td>Regenerate <code>DeepCopy</code> methods</td>
+</tr>
+<tr>
+<td><code>make fmt</code></td>
+<td><code>go fmt ./...</code></td>
+</tr>
+<tr>
+<td><code>make vet</code></td>
+<td><code>go vet ./...</code></td>
+</tr>
+<tr>
+<td><code>make lint</code></td>
+<td>Run <code>golangci-lint</code></td>
+</tr>
+<tr>
+<td><code>make lint-fix</code></td>
+<td>Run <code>golangci-lint --fix</code></td>
+</tr>
+<tr>
+<td><code>make lint-config</code></td>
+<td>Verify linter config</td>
+</tr>
+</tbody>
+</table>
+<h3 id="build-image">Build &amp; Image</h3>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make build</code></td>
+<td>Build manager binary to <code>bin/manager</code></td>
+</tr>
+<tr>
+<td><code>make docker-build IMG=&lt;img&gt;</code></td>
+<td>Build Docker image</td>
+</tr>
+<tr>
+<td><code>make docker-push IMG=&lt;img&gt;</code></td>
+<td>Push Docker image</td>
+</tr>
+<tr>
+<td><code>make docker-buildx IMG=&lt;img&gt;</code></td>
+<td>Multi-platform build &amp; push</td>
+</tr>
+<tr>
+<td><code>make build-installer IMG=&lt;img&gt;</code></td>
+<td>Generate <code>dist/install.yaml</code> (Kustomize bundle)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="testing">Testing</h3>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make test</code></td>
+<td>Unit tests with envtest (no cluster needed)</td>
+</tr>
+<tr>
+<td><code>make test-e2e</code></td>
+<td>E2E tests in an isolated Kind cluster</td>
+</tr>
+<tr>
+<td><code>make test-helm-e2e</code></td>
+<td>Helm E2E tests in an isolated Kind cluster</td>
+</tr>
+<tr>
+<td><code>make helm-test</code></td>
+<td>Helm unit tests with <code>helm unittest</code></td>
+</tr>
+<tr>
+<td><code>make helm-update-snapshots</code></td>
+<td>Regenerate Helm snapshot baselines</td>
+</tr>
+</tbody>
+</table>
+<h3 id="helm-distribution">Helm — Distribution</h3>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make generate-dist</code></td>
+<td><strong>Full refresh</strong>: build-installer → helm-chart → helm-schema → lint → update-snapshots</td>
+</tr>
+<tr>
+<td><code>make helm-chart</code></td>
+<td>Lightweight sync: re-run Helm plugin + regenerate schema</td>
+</tr>
+<tr>
+<td><code>make helm-schema</code></td>
+<td>Generate <code>dist/chart/values.schema.json</code> from <code>values.yaml</code></td>
+</tr>
+<tr>
+<td><code>make helm-package</code></td>
+<td>Package <code>dist/chart/</code> as a versioned <code>.tgz</code> in <code>dist/</code></td>
+</tr>
+<tr>
+<td><code>make helm-test</code></td>
+<td>Run Helm unit/snapshot tests (<code>helm unittest</code>)</td>
+</tr>
+<tr>
+<td><code>make helm-update-snapshots</code></td>
+<td>Regenerate snapshot baselines after intentional changes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="helm-local-development">Helm — Local Development</h3>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make helm-deploy IMG=&lt;img&gt;</code></td>
+<td><code>helm upgrade --install</code> on the current cluster</td>
+</tr>
+<tr>
+<td><code>make helm-uninstall</code></td>
+<td>Uninstall the Helm release</td>
+</tr>
+<tr>
+<td><code>make helm-status</code></td>
+<td>Show release status</td>
+</tr>
+<tr>
+<td><code>make helm-history</code></td>
+<td>Show release history</td>
+</tr>
+<tr>
+<td><code>make helm-rollback</code></td>
+<td>Rollback to previous release</td>
+</tr>
+</tbody>
+</table>
+<h3 id="versioning">Versioning</h3>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make release-tag</code></td>
+<td>Git tag current commit as <code>$(VERSION)</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-local-testing-with-kind">7. Local Testing with Kind</h2>
+<h3 id="unit-tests-no-cluster-required">Unit Tests (No Cluster Required)</h3>
+<pre><code class="language-bash">make test
+</code></pre>
+<p>Uses <code>controller-runtime/tools/setup-envtest</code> to spin up a real Kubernetes API server + etcd in-process.</p>
+<h3 id="e2e-tests-isolated-kind-cluster">E2E Tests (Isolated Kind Cluster)</h3>
+<pre><code class="language-bash">make test-e2e
+# Internally: creates kind cluster &quot;my-operator-test-e2e&quot;, runs tests, then deletes cluster
+</code></pre>
+<p>To use a custom cluster name:</p>
+<pre><code class="language-bash">KIND_CLUSTER=my-cluster make test-e2e
+</code></pre>
+<h3 id="helm-e2e-tests-isolated-kind-cluster">Helm E2E Tests (Isolated Kind Cluster)</h3>
+<pre><code class="language-bash">make test-helm-e2e
+# Internally: creates kind cluster &quot;my-operator-test-helm-e2e&quot;, installs via Helm, runs tests, deletes cluster
+</code></pre>
+<h3 id="local-helm-development-workflow-inner-loop">Local Helm Development Workflow (Inner Loop)</h3>
+<p>A typical development cycle using a local Kind cluster:</p>
+<pre><code class="language-bash"># ── 1. Create a dedicated dev cluster ────────────────────────────────────────
+kind create cluster --name my-operator-dev
+
+# ── 2. Sync chart after any config / API change ───────────────────────────────
+make generate-dist     # Full refresh (CRDs + chart + schema + lint + snapshots)
+# or for a quicker sync:
+make helm-chart        # Chart + schema only
+
+# ── 3. Build &amp; load the manager image (no registry needed) ───────────────────
+export IMG=my-operator:dev
+make docker-build IMG=$IMG
+kind load docker-image $IMG --name my-operator-dev
+
+# ── 4. Install / upgrade via Helm ─────────────────────────────────────────────
+make helm-deploy IMG=$IMG
+# Runs: helm upgrade --install my-operator dist/chart \
+#         --namespace my-operator-system --create-namespace \
+#         --set manager.image.repository=my-operator \
+#         --set manager.image.tag=dev \
+#         --wait --timeout 5m
+
+# ── 5. Verify the deployment ──────────────────────────────────────────────────
+kubectl get all -n my-operator-system
+make helm-status
+
+# ── 6. Tail controller logs ───────────────────────────────────────────────────
+kubectl logs -n my-operator-system \
+  deployment/my-operator-controller-manager -c manager -f
+
+# ── 7. Iterate: code change → rebuild → redeploy ─────────────────────────────
+make docker-build IMG=$IMG
+kind load docker-image $IMG --name my-operator-dev
+make helm-deploy IMG=$IMG          # Helm upgrade re-uses the same release name
+
+# ── 8. Rollback if needed ─────────────────────────────────────────────────────
+make helm-history                  # See revision list
+make helm-rollback                 # Roll back to previous revision
+
+# ── 9. Teardown ───────────────────────────────────────────────────────────────
+make helm-uninstall
+kind delete cluster --name my-operator-dev
+</code></pre>
+<p><strong>Override default Helm variables</strong> without editing the Makefile:</p>
+<pre><code class="language-bash">HELM_NAMESPACE=staging \
+HELM_RELEASE=my-operator-staging \
+HELM_EXTRA_ARGS=&quot;--set manager.replicas=2&quot; \
+make helm-deploy IMG=$IMG
+</code></pre>
+<hr />
+<h2 id="8-cicd-github-actions-pipeline">8. CI/CD — GitHub Actions Pipeline</h2>
+<p>This project uses a <strong>five-job pipeline</strong> that gates the release on all test stages passing:</p>
+<pre><code>lint ──────────┐
+test ──────────┤
+test-chart ────┤──► release  (main branch / workflow_dispatch only)
+test-e2e ──────┤
+test-helm-e2e ─┘
+</code></pre>
+<h3 id="required-repository-variables-secrets">Required Repository Variables &amp; Secrets</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REGISTRY</code></td>
+<td>Variable</td>
+<td>Registry host or path (e.g., <code>docker.io</code>, <code>myrepo.azurecr.io</code>)</td>
+</tr>
+<tr>
+<td><code>REGISTRY_USERNAME</code></td>
+<td>Secret</td>
+<td>Registry login username</td>
+</tr>
+<tr>
+<td><code>REGISTRY_PASSWORD</code></td>
+<td>Secret</td>
+<td>Registry login password or token</td>
+</tr>
+</tbody>
+</table>
+<h3 id="full-pipeline-workflow">Full Pipeline Workflow</h3>
+<pre><code class="language-yaml">name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ${{ vars.REGISTRY || 'docker.io' }}
+  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+  IMAGE_NAME: my-operator-manager
+
+jobs:
+  # ── 1. Lint ─────────────────────────────────────────────────────────
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.22', cache: true }
+      - run: make lint-config
+      - run: make lint
+
+  # ── 2. Unit Tests ───────────────────────────────────────────────────
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.22', cache: true }
+      - run: go mod tidy &amp;&amp; make test
+
+  # ── 3. Helm Chart Lint &amp; Unit Tests ─────────────────────────────────
+  test-chart:
+    name: Lint &amp; Test Helm Chart
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.22', cache: true }
+      - uses: azure/setup-helm@v4
+        with: { version: 'v3.19.0' }
+      - run: helm plugin install https://github.com/helm-unittest/helm-unittest
+      - run: make helm-chart
+      - run: helm lint ./dist/chart
+      - run: make helm-test
+
+  # ── 4. Operator E2E Tests ────────────────────────────────────────────
+  test-e2e:
+    name: Run E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.22', cache: true }
+      - name: Install Kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-$(go env GOARCH)
+          chmod +x ./kind &amp;&amp; sudo mv ./kind /usr/local/bin/kind
+      - run: go mod tidy &amp;&amp; make test-e2e
+
+  # ── 5. Helm E2E Tests ────────────────────────────────────────────────
+  test-helm-e2e:
+    name: Run Helm E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.22', cache: true }
+      - uses: azure/setup-helm@v4
+        with: { version: 'v3.19.0' }
+      - name: Install Kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-$(go env GOARCH)
+          chmod +x ./kind &amp;&amp; sudo mv ./kind /usr/local/bin/kind
+      - run: make helm-chart
+      - run: go mod tidy &amp;&amp; make test-helm-e2e
+
+  # ── 6. Release (main branch only) ────────────────────────────────────
+  release:
+    name: Build and Push Release
+    needs: [lint, test, test-chart, test-e2e, test-helm-e2e]
+    if: (github.event_name == 'push' &amp;&amp; github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: Build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.22', cache: true }
+      - uses: azure/setup-helm@v4
+        with: { version: 'v3.19.0' }
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Parse Registry Metadata &amp; Compute Version
+        run: |
+          RAW_REG=&quot;${{ env.REGISTRY }}&quot;
+          RAW_USER=&quot;${{ env.REGISTRY_USERNAME }}&quot;
+          IMG_NAME=&quot;${{ env.IMAGE_NAME }}&quot;
+
+          FIRST_PART=$(echo &quot;$RAW_REG&quot; | cut -d'/' -f1)
+          if [[ &quot;$FIRST_PART&quot; == *.* ]]; then
+            REGISTRY_HOST=&quot;$FIRST_PART&quot;
+            REG_PATH=$(echo &quot;$RAW_REG&quot; | cut -d'/' -f2-)
+            [ &quot;$REG_PATH&quot; = &quot;$FIRST_PART&quot; ] &amp;&amp; REG_PATH=&quot;&quot;
+          else
+            REGISTRY_HOST=&quot;docker.io&quot;
+            REG_PATH=&quot;$RAW_REG&quot;
+          fi
+
+          if [ -z &quot;$REG_PATH&quot; ]; then
+            DOCKER_IMAGE_PRIMARY=&quot;${REGISTRY_HOST}/${RAW_USER}/${IMG_NAME}&quot;
+            HELM_REPO_URL=&quot;oci://${REGISTRY_HOST}/${RAW_USER}&quot;
+          elif [[ &quot;$REG_PATH&quot; == */* ]]; then
+            DOCKER_IMAGE_PRIMARY=&quot;${REGISTRY_HOST}/${REG_PATH}&quot;
+            HELM_REPO_URL=&quot;oci://${REGISTRY_HOST}/$(dirname &quot;$REG_PATH&quot;)&quot;
+          else
+            DOCKER_IMAGE_PRIMARY=&quot;${REGISTRY_HOST}/${REG_PATH}/${IMG_NAME}&quot;
+            HELM_REPO_URL=&quot;oci://${REGISTRY_HOST}/${REG_PATH}&quot;
+          fi
+
+          BASE_VERSION=$(cat VERSION | tr -d '[:space:]')
+          MAJOR_MINOR=$(echo &quot;$BASE_VERSION&quot; | cut -d'.' -f1,2)
+          APP_VERSION=&quot;${MAJOR_MINOR}.${{ github.run_number }}&quot;
+
+          echo &quot;REGISTRY_HOST=$REGISTRY_HOST&quot;               &gt;&gt; $GITHUB_ENV
+          echo &quot;DOCKER_IMAGE_PRIMARY=$DOCKER_IMAGE_PRIMARY&quot; &gt;&gt; $GITHUB_ENV
+          echo &quot;HELM_REPO_URL=$HELM_REPO_URL&quot;               &gt;&gt; $GITHUB_ENV
+          echo &quot;APP_VERSION=$APP_VERSION&quot;                   &gt;&gt; $GITHUB_ENV
+
+      - name: Log in to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY_HOST }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+
+      - name: Log in to Helm OCI Registry
+        run: |
+          echo &quot;${{ env.REGISTRY_PASSWORD }}&quot; | \
+          helm registry login ${{ env.REGISTRY_HOST }} \
+            --username ${{ env.REGISTRY_USERNAME }} --password-stdin
+
+      - name: Sync Helm Chart
+        run: make helm-chart
+
+      - name: Build &amp; Push Manager Image
+        run: |
+          make docker-build IMG=${{ env.DOCKER_IMAGE_PRIMARY }}:${{ env.APP_VERSION }}
+          docker tag ${{ env.DOCKER_IMAGE_PRIMARY }}:${{ env.APP_VERSION }} \
+                     ${{ env.DOCKER_IMAGE_PRIMARY }}:latest
+          docker tag ${{ env.DOCKER_IMAGE_PRIMARY }}:${{ env.APP_VERSION }} \
+                     ${{ env.DOCKER_IMAGE_PRIMARY }}:${{ github.sha }}
+          make docker-push IMG=${{ env.DOCKER_IMAGE_PRIMARY }}:${{ env.APP_VERSION }}
+          make docker-push IMG=${{ env.DOCKER_IMAGE_PRIMARY }}:latest
+          make docker-push IMG=${{ env.DOCKER_IMAGE_PRIMARY }}:${{ github.sha }}
+
+      - name: Package &amp; Push Helm Chart to OCI Registry
+        run: |
+          # Inject the built image into chart values
+          sed -i &quot;s|repository: controller|repository: ${DOCKER_IMAGE_PRIMARY}|g&quot; \
+            dist/chart/values.yaml
+
+          helm package dist/chart \
+            --version ${{ env.APP_VERSION }} \
+            --app-version ${{ env.APP_VERSION }}
+
+          helm push my-operator-${{ env.APP_VERSION }}.tgz ${{ env.HELM_REPO_URL }}
+</code></pre>
+<hr />
+<h2 id="9-distribution-via-oci-registry">9. Distribution via OCI Registry</h2>
+<p>This project publishes both the <strong>container image</strong> and <strong>Helm chart</strong> as OCI artifacts.</p>
+<h3 id="install-from-oci-registry-end-users">Install from OCI Registry (End Users)</h3>
+<pre><code class="language-bash"># Authenticate
+helm registry login &lt;registry-host&gt; --username &lt;user&gt; --password &lt;token&gt;
+
+# Install directly from OCI
+helm install my-operator \
+  oci://&lt;registry-host&gt;/&lt;registry-path&gt;/my-operator \
+  --version 0.1.42 \
+  --namespace my-operator-system \
+  --create-namespace
+</code></pre>
+<h3 id="alternative-kustomize-yaml-bundle">Alternative: Kustomize YAML Bundle</h3>
+<p>For users without Helm, generate a single self-contained manifest:</p>
+<pre><code class="language-bash">make build-installer IMG=&lt;registry&gt;/&lt;image&gt;:&lt;tag&gt;
+# Outputs: dist/install.yaml
+
+# End users install with:
+kubectl apply -f dist/install.yaml
+</code></pre>
+<hr />
+<h2 id="10-project-structure-reference">10. Project Structure Reference</h2>
+<pre><code>my-operator/
+├── api/
+│   └── v1alpha1/
+│       ├── &lt;kind&gt;_types.go          # CRD schema (+kubebuilder markers)
+│       └── zz_generated.deepcopy.go # Auto-generated (make generate)
+├── cmd/
+│   └── main.go                      # Manager entry point
+├── config/
+│   ├── crd/bases/                   # Auto-generated CRDs (make manifests)
+│   ├── rbac/                        # Auto-generated RBAC (make manifests)
+│   ├── manager/                     # Manager Deployment kustomize patch
+│   └── default/                     # Default kustomize overlay
+├── dist/
+│   ├── install.yaml                 # Kustomize bundle (make build-installer)
+│   └── chart/                       # Helm chart
+│       ├── Chart.yaml
+│       ├── values.yaml
+│       ├── values.schema.json       # Generated (make helm-schema)
+│       ├── .helmignore
+│       ├── templates/               # Rendered manifests
+│       └── tests/                   # Helm unit tests
+│           └── __snapshot__/        # Baselines — commit these!
+├── hack/
+│   └── boilerplate.go.txt           # License header for generated files
+├── internal/
+│   └── controller/
+│       ├── &lt;kind&gt;_controller.go     # Reconciliation logic
+│       └── suite_test.go            # envtest bootstrap
+├── test/
+│   ├── e2e/                         # Operator E2E tests (Kind)
+│   └── helm_e2e/                    # Helm E2E tests (Kind)
+├── docs/
+│   └── SETUP_TEMPLATE.md            # This file
+├── .github/
+│   └── workflows/
+│       └── release.yml              # CI/CD pipeline
+├── .golangci.yml                    # Linter configuration
+├── .custom-gcl.yml                  # Custom golangci-lint plugins (optional)
+├── Dockerfile                       # Multi-stage build
+├── Makefile                         # All build/test/deploy commands
+├── PROJECT                          # Kubebuilder metadata (DO NOT EDIT)
+└── VERSION                          # Base version file (e.g., &quot;0.1&quot;)
+</code></pre>
+<hr />
+<h2 id="11-quick-reference-cheat-sheet">11. Quick-Reference Cheat Sheet</h2>
+<table>
+<thead>
+<tr>
+<th>Goal</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Init project</td>
+<td><code>kubebuilder init --domain example.io --repo github.com/org/my-operator</code></td>
+</tr>
+<tr>
+<td>Scaffold API</td>
+<td><code>kubebuilder create api --group mygroup --version v1alpha1 --kind MyKind --resource --controller</code></td>
+</tr>
+<tr>
+<td>Scaffold webhook</td>
+<td><code>kubebuilder create webhook --group mygroup --version v1alpha1 --kind MyKind --defaulting --programmatic-validation</code></td>
+</tr>
+<tr>
+<td>Regenerate CRDs/RBAC</td>
+<td><code>make manifests</code></td>
+</tr>
+<tr>
+<td>Regenerate DeepCopy</td>
+<td><code>make generate</code></td>
+</tr>
+<tr>
+<td>Fix code style</td>
+<td><code>make lint-fix</code></td>
+</tr>
+<tr>
+<td>Run unit tests</td>
+<td><code>make test</code></td>
+</tr>
+<tr>
+<td>Run E2E tests</td>
+<td><code>make test-e2e</code></td>
+</tr>
+<tr>
+<td>Run Helm E2E tests</td>
+<td><code>make test-helm-e2e</code></td>
+</tr>
+<tr>
+<td>Build image</td>
+<td><code>make docker-build IMG=&lt;img&gt;</code></td>
+</tr>
+<tr>
+<td>Push image</td>
+<td><code>make docker-push IMG=&lt;img&gt;</code></td>
+</tr>
+<tr>
+<td>Sync Helm chart</td>
+<td><code>make helm-chart</code></td>
+</tr>
+<tr>
+<td>Run Helm unit tests</td>
+<td><code>make helm-test</code></td>
+</tr>
+<tr>
+<td>Update Helm snapshots</td>
+<td><code>make helm-update-snapshots</code></td>
+</tr>
+<tr>
+<td>Local Helm deploy</td>
+<td><code>make helm-deploy IMG=&lt;img&gt;</code></td>
+</tr>
+<tr>
+<td>Package Helm chart</td>
+<td><code>make helm-package</code></td>
+</tr>
+<tr>
+<td>Bump version tag</td>
+<td><code>make release-tag &amp;&amp; git push origin &lt;TAG&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://book.kubebuilder.io">Kubebuilder Book</a></li>
+<li><a href="https://github.com/kubernetes-sigs/controller-runtime/blob/main/FAQ.md">controller-runtime FAQ</a></li>
+<li><a href="https://helm.sh/docs/chart_best_practices/">Helm Chart Best Practices</a></li>
+<li><a href="https://github.com/helm-unittest/helm-unittest">helm-unittest</a></li>
+<li><a href="https://github.com/losisin/helm-values-schema-json">helm-values-schema-json</a></li>
+<li><a href="https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md">Kubernetes API Conventions</a></li>
+<li><a href="https://github.com/kubernetes/community/blob/master/contributors/devel/sig-instrumentation/logging.md#message-style-guidelines">Logging Message Style Guidelines</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
