@@ -29,5 +29,6 @@ The repository is structured as follows:
 ---
 
 ## Next Steps
+- Browse the full list of guides and templates in the [Available Content Directory](available_content.md).
 - Learn how to build and test the operator in the [Development Guide](development.md).
 - Understand how the Helm chart is built and deployed in the [Helm Distribution Guide](distribution.md).

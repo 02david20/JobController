@@ -5,14 +5,30 @@ site_author: DSandBox
 theme:
   name: material
   palette:
-    primary: indigo
-    accent: indigo
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
   features:
     - navigation.tabs
     - content.code.copy
 
+extra_css:
+  - stylesheets/custom.css
+
 nav:
   - Home: index.md
+  - Available Content: available_content.md
   - Development Guide: development.md
   - Project Setup Template: SETUP_TEMPLATE.md
   - Helm Distribution: distribution.md
