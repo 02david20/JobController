@@ -329,6 +329,7 @@ generate-dist: build-installer kubebuilder ## Generate dist/install.yaml, update
 	rm -f .github/workflows/test-chart.yml
 	$(MAKE) helm-schema
 	helm lint $(HELM_CHART_DIR)
+	$(MAKE) helm-update-snapshots
 
 .PHONY: helm-chart
 helm-chart: kubebuilder ## Regenerate the Helm chart in dist/chart/ from current kustomize output.

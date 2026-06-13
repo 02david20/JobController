@@ -6,9 +6,9 @@ should match snapshot with default values:
       labels:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/managed-by: Helm
-        app.kubernetes.io/name: jobcontroller
-        helm.sh/chart: jobcontroller-0.1.0
-      name: RELEASE-NAME-jobcontroller-controller-manager
+        app.kubernetes.io/name: job-helm
+        helm.sh/chart: job-helm-0.1.0
+      name: RELEASE-NAME-job-helm-controller-manager
       namespace: NAMESPACE
   2: |
     apiVersion: rbac.authorization.k8s.io/v1
@@ -17,9 +17,9 @@ should match snapshot with default values:
       labels:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/managed-by: Helm
-        app.kubernetes.io/name: jobcontroller
-        helm.sh/chart: jobcontroller-0.1.0
-      name: RELEASE-NAME-jobcontroller-leader-election-role
+        app.kubernetes.io/name: job-helm
+        helm.sh/chart: job-helm-0.1.0
+      name: RELEASE-NAME-job-helm-leader-election-role
       namespace: NAMESPACE
     rules:
       - apiGroups:
@@ -60,23 +60,23 @@ should match snapshot with default values:
       labels:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/managed-by: Helm
-        app.kubernetes.io/name: jobcontroller
-        helm.sh/chart: jobcontroller-0.1.0
-      name: RELEASE-NAME-jobcontroller-leader-election-rolebinding
+        app.kubernetes.io/name: job-helm
+        helm.sh/chart: job-helm-0.1.0
+      name: RELEASE-NAME-job-helm-leader-election-rolebinding
       namespace: NAMESPACE
     roleRef:
       apiGroup: rbac.authorization.k8s.io
       kind: Role
-      name: RELEASE-NAME-jobcontroller-leader-election-role
+      name: RELEASE-NAME-job-helm-leader-election-role
     subjects:
       - kind: ServiceAccount
-        name: RELEASE-NAME-jobcontroller-controller-manager
+        name: RELEASE-NAME-job-helm-controller-manager
         namespace: NAMESPACE
   4: |
     apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRole
     metadata:
-      name: RELEASE-NAME-jobcontroller-manager-role
+      name: RELEASE-NAME-job-helm-manager-role
     rules:
       - apiGroups:
           - batch
@@ -129,14 +129,14 @@ should match snapshot with default values:
       labels:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/managed-by: Helm
-        app.kubernetes.io/name: jobcontroller
-        helm.sh/chart: jobcontroller-0.1.0
-      name: RELEASE-NAME-jobcontroller-manager-rolebinding
+        app.kubernetes.io/name: job-helm
+        helm.sh/chart: job-helm-0.1.0
+      name: RELEASE-NAME-job-helm-manager-rolebinding
     roleRef:
       apiGroup: rbac.authorization.k8s.io
       kind: ClusterRole
-      name: RELEASE-NAME-jobcontroller-manager-role
+      name: RELEASE-NAME-job-helm-manager-role
     subjects:
       - kind: ServiceAccount
-        name: RELEASE-NAME-jobcontroller-controller-manager
+        name: RELEASE-NAME-job-helm-controller-manager
         namespace: NAMESPACE

@@ -244,4 +244,4 @@ jobs:
           helm package dist/chart --version ${{ env.APP_VERSION }} --app-version ${{ env.APP_VERSION }}
           
           # Push to OCI registry
-          helm push jobcontroller-${{ env.APP_VERSION }}.tgz ${{ env.HELM_REPO_URL }}
+          helm push job-helm-${{ env.APP_VERSION }}.tgz ${{ env.HELM_REPO_URL }}

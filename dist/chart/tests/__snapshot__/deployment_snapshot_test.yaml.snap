@@ -6,16 +6,16 @@ should match snapshot with default values:
       labels:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/managed-by: Helm
-        app.kubernetes.io/name: jobcontroller
+        app.kubernetes.io/name: job-helm
         control-plane: controller-manager
-        helm.sh/chart: jobcontroller-0.1.0
-      name: RELEASE-NAME-jobcontroller-controller-manager
+        helm.sh/chart: job-helm-0.1.0
+      name: RELEASE-NAME-job-helm-controller-manager
       namespace: NAMESPACE
     spec:
       replicas: 1
       selector:
         matchLabels:
-          app.kubernetes.io/name: jobcontroller
+          app.kubernetes.io/name: job-helm
           control-plane: controller-manager
       template:
         metadata:
@@ -24,9 +24,9 @@ should match snapshot with default values:
           labels:
             app.kubernetes.io/instance: RELEASE-NAME
             app.kubernetes.io/managed-by: Helm
-            app.kubernetes.io/name: jobcontroller
+            app.kubernetes.io/name: job-helm
             control-plane: controller-manager
-            helm.sh/chart: jobcontroller-0.1.0
+            helm.sh/chart: job-helm-0.1.0
         spec:
           containers:
             - args:
@@ -74,7 +74,7 @@ should match snapshot with default values:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
-          serviceAccountName: RELEASE-NAME-jobcontroller-controller-manager
+          serviceAccountName: RELEASE-NAME-job-helm-controller-manager
           terminationGracePeriodSeconds: 10
           volumes: []
 should render image with custom repository and tag:
@@ -85,16 +85,16 @@ should render image with custom repository and tag:
       labels:
         app.kubernetes.io/instance: RELEASE-NAME
         app.kubernetes.io/managed-by: Helm
-        app.kubernetes.io/name: jobcontroller
+        app.kubernetes.io/name: job-helm
         control-plane: controller-manager
-        helm.sh/chart: jobcontroller-0.1.0
-      name: RELEASE-NAME-jobcontroller-controller-manager
+        helm.sh/chart: job-helm-0.1.0
+      name: RELEASE-NAME-job-helm-controller-manager
       namespace: NAMESPACE
     spec:
       replicas: 1
       selector:
         matchLabels:
-          app.kubernetes.io/name: jobcontroller
+          app.kubernetes.io/name: job-helm
           control-plane: controller-manager
       template:
         metadata:
@@ -103,9 +103,9 @@ should render image with custom repository and tag:
           labels:
             app.kubernetes.io/instance: RELEASE-NAME
             app.kubernetes.io/managed-by: Helm
-            app.kubernetes.io/name: jobcontroller
+            app.kubernetes.io/name: job-helm
             control-plane: controller-manager
-            helm.sh/chart: jobcontroller-0.1.0
+            helm.sh/chart: job-helm-0.1.0
         spec:
           containers:
             - args:
@@ -153,6 +153,6 @@ should render image with custom repository and tag:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
-          serviceAccountName: RELEASE-NAME-jobcontroller-controller-manager
+          serviceAccountName: RELEASE-NAME-job-helm-controller-manager
           terminationGracePeriodSeconds: 10
           volumes: []
