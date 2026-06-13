@@ -223,10 +223,12 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
 HELM_SCHEMA_GEN ?= go run github.com/losisin/helm-values-schema-json/v2
+KUBEBUILDER ?= $(LOCALBIN)/kubebuilder
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.8.1
 CONTROLLER_TOOLS_VERSION ?= v0.20.1
+KUBEBUILDER_VERSION ?= v4.14.0
 
 #ENVTEST_VERSION is the version of controller-runtime release branch to fetch the envtest setup script (i.e. release-0.20)
 ENVTEST_VERSION ?= $(shell v='$(call gomodver,sigs.k8s.io/controller-runtime)'; \
@@ -272,6 +274,20 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 		mv -f $(LOCALBIN)/golangci-lint-custom $(GOLANGCI_LINT); \
 	} || true
 
+.PHONY: kubebuilder
+kubebuilder: $(KUBEBUILDER) ## Download kubebuilder locally if necessary.
+$(KUBEBUILDER): $(LOCALBIN)
+	@if command -v kubebuilder >/dev/null 2>&1; then \
+		echo "Found global kubebuilder installation. Reusing it..."; \
+		ln -sf $$(command -v kubebuilder) $(KUBEBUILDER); \
+	else \
+		echo "kubebuilder not found globally. Installing $(KUBEBUILDER_VERSION) locally..."; \
+		OS=$$(go env GOOS); \
+		ARCH=$$(go env GOARCH); \
+		curl -L -s -o $(KUBEBUILDER) "https://go.kubebuilder.io/dl/$(KUBEBUILDER_VERSION)/$$OS/$$ARCH"; \
+		chmod +x $(KUBEBUILDER); \
+	fi
+
 
 
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
@@ -308,15 +324,15 @@ HELM_CHART_DIR ?= dist/chart
 HELM_EXTRA_ARGS ?=
 
 .PHONY: generate-dist
-generate-dist: build-installer ## Generate dist/install.yaml, update Helm chart, schema, and lint.
-	kubebuilder edit --plugins=helm.kubebuilder.io/v2-alpha
+generate-dist: build-installer kubebuilder ## Generate dist/install.yaml, update Helm chart, schema, and lint.
+	$(KUBEBUILDER) edit --plugins=helm.kubebuilder.io/v2-alpha
 	rm -f .github/workflows/test-chart.yml
 	$(MAKE) helm-schema
 	helm lint $(HELM_CHART_DIR)
 
 .PHONY: helm-chart
-helm-chart: ## Regenerate the Helm chart in dist/chart/ from current kustomize output.
-	kubebuilder edit --plugins=helm.kubebuilder.io/v2-alpha
+helm-chart: kubebuilder ## Regenerate the Helm chart in dist/chart/ from current kustomize output.
+	$(KUBEBUILDER) edit --plugins=helm.kubebuilder.io/v2-alpha
 	rm -f .github/workflows/test-chart.yml
 	$(MAKE) helm-schema
 
