@@ -284,7 +284,7 @@ $(KUBEBUILDER): $(LOCALBIN)
 		echo "kubebuilder not found globally. Installing $(KUBEBUILDER_VERSION) locally..."; \
 		OS=$$(go env GOOS); \
 		ARCH=$$(go env GOARCH); \
-		curl -L -s -o $(KUBEBUILDER) "https://go.kubebuilder.io/dl/$(KUBEBUILDER_VERSION)/$$OS/$$ARCH"; \
+		curl -L -s -o $(KUBEBUILDER) "https://github.com/kubernetes-sigs/kubebuilder/releases/download/$(KUBEBUILDER_VERSION)/kubebuilder_$${OS}_$${ARCH}"; \
 		chmod +x $(KUBEBUILDER); \
 	fi
 
